@@ -22,7 +22,7 @@ public class WordCountApp {
     }
 
     public static void performFileCount() {
-        String fileName = "/usr/local/google/home/pamusuo/Research/PackagePermissionsManager/src/main/java/com/ampaschal/google/test.txt";
+        String fileName = "src/main/java/com/ampaschal/google/test.txt";
 
         try {
             int wordCount = countWords(fileName);

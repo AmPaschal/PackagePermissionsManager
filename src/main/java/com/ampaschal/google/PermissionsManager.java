@@ -28,7 +28,7 @@ public class PermissionsManager {
 
     public static void setup() {
 
-        String permissionsFilePath = "/usr/local/google/home/pamusuo/Research/PackagePermissionsManager/src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
+        String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
 
         setup(permissionsFilePath, null);
 
@@ -39,7 +39,7 @@ public class PermissionsManager {
             @Override
             public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                // System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
 
 
             }

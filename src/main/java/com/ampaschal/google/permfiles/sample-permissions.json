@@ -10,8 +10,8 @@
     "net.accept": false,
     "net.allowedUrls": [],
     "net.deniedUrls": [],
-    "runtime": false,
-    "runtime.exec": false,
+    "runtime": true,
+    "runtime.exec": true,
     "runtime.allowedCommands": [],
     "runtime.deniedCommands": []
   },
