@@ -18,8 +18,12 @@ public class BytecodeGeneratorAgent {
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
         System.out.println("Permissions Agent");
-
-        PermissionsManager.setup();
+        boolean monitorMode;
+        boolean enforceMode;
+        monitorMode = agentArgs.contains("m");
+        enforceMode = agentArgs.contains("e");
+        PermissionsManager.setup(monitorMode, enforceMode);
+        =
 
         inst.addTransformer(new BytecodeGenerator(), true);
 

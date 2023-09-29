@@ -17,7 +17,11 @@ public class NoTransformationAgent {
 
         System.out.println("No transformation Agent");
 
-        PermissionsManager.setup();
+        boolean monitorMode;
+        boolean enforceMode;
+        monitorMode = agentArgs.contains("m");
+        enforceMode = agentArgs.contains("e");
+        PermissionsManager.setup(monitorMode, enforceMode);
 
         TestHelper.logTime(ProfileKey.AGENT_EXITING);
 
