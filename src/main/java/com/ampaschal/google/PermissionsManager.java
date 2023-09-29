@@ -12,8 +12,6 @@ import java.util.*;
 public class PermissionsManager {
 
     private static PermissionsCallback callback;
-    private static boolean monitorMode;
-    private static boolean enforceMode;
 
     private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
 
@@ -28,13 +26,10 @@ public class PermissionsManager {
         throw new SecurityException("Trying things out");
     }
 
-    public static void setup(boolean monitor, boolean enforce) {
+    public static void setup() {
 
         String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
-        setMonitorMode(monitor);
-        setEnforcementMode(enforce);
-        System.out.println("Monitoring Mode: " + monitor);
-        System.out.println("Enforcement Mode: " + enforce);
+        
         setup(permissionsFilePath, null);
 
     }
@@ -57,20 +52,17 @@ public class PermissionsManager {
     }
 
     public static void setup(String permissionsFile, PermissionsCallback permCallback) {
-        
-        //TODO: If not in enforcement mode do not return if permissions file is empty
-        if ((permissionsFile == null || permissionsFile.isEmpty()) && enforceMode) {
+
+        if (permissionsFile == null || permissionsFile.isEmpty()) {
             return;
         }
 //        Set the permissions object
-        if(enforceMode) {
-            try {
-                parseAndSetPermissionsObject(permissionsFile);
-                callback = permCallback != null ? permCallback : getDefaultCallback();
-            } catch (IOException e) {
-                System.out.println("Exception thrown");
-                throw new RuntimeException(e);
-            }
+        try {
+            parseAndSetPermissionsObject(permissionsFile);
+            callback = permCallback != null ? permCallback : getDefaultCallback();
+        } catch (IOException e) {
+            System.out.println("Exception thrown");
+            throw new RuntimeException(e);
         }
     }
 
@@ -87,13 +79,6 @@ public class PermissionsManager {
         }
     }
 
-    private static void setMonitorMode(boolean monitor) {
-        monitorMode = monitor;
-
-    }
-    private static void setEnforcementMode(boolean enforce) {
-        enforceMode = enforce;
-    }
     private static String getSubjectPath() {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
@@ -154,9 +139,8 @@ public class PermissionsManager {
         }
 
         int subjectPathSize = subjectPaths.size();
-        if(monitorMode) {
+
         callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
-        }
 
 //        Check the Permissions cache if access is permitted
 //        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
@@ -171,7 +155,6 @@ public class PermissionsManager {
 
 
 //        Get the list of permission objects from the stack trace
-        if(enforceMode) {
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
         if (permissionObjects.isEmpty()) {
@@ -189,7 +172,6 @@ public class PermissionsManager {
                 throw new SecurityException("Access to " + resourceItem + " not permitted");
             }
         }
-    }
 
     }
 
@@ -220,9 +202,7 @@ public class PermissionsManager {
 
         int subjectPathSize = subjectPaths.size();
 
-        if(monitorMode) {
-            callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
-        }
+        callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
 
 //        Check the Permissions cache if access is permitted
 //        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
@@ -237,23 +217,21 @@ public class PermissionsManager {
 
 
 //        Get the list of permission objects from the stack trace
-        if(enforceMode) {
-            Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
+        Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
-            if (permissionObjects.isEmpty()) {
-                return;
-            }
+        if (permissionObjects.isEmpty()) {
+            return;
+        }
 
 //        System.out.println("Permission count: " + permissionObjects.size());
 
 //        We confirm each package in the stacktrace has the necessary permissions
-            for (PermissionObject permissionObject: permissionObjects) {
-                boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
+        for (PermissionObject permissionObject: permissionObjects) {
+            boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
 
-                if (!permitted) {
-                    callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
-                    throw new SecurityException("Access to " + resourceItem + " not permitted");
-                }
+            if (!permitted) {
+                callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
+                throw new SecurityException("Access to " + resourceItem + " not permitted");
             }
         }
 

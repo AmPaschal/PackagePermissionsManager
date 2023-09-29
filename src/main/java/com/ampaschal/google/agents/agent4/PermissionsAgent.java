@@ -20,11 +20,8 @@ public class PermissionsAgent {
         // TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
         System.out.println("Permissions Agent");
-        boolean monitorMode;
-        boolean enforceMode;
-        monitorMode = agentArgs.contains("m");
-        enforceMode = agentArgs.contains("e");
-        PermissionsManager.setup(monitorMode, enforceMode);
+
+        PermissionsManager.setup();
 
         inst.addTransformer(new PermissionsTransformer(), true);
 
