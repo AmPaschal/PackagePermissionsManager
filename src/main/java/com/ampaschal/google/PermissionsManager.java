@@ -63,7 +63,7 @@ public class PermissionsManager {
             return;
         }
 //        Set the permissions object
-        if(enforceMode) {
+        
             try {
                 parseAndSetPermissionsObject(permissionsFile);
                 callback = permCallback != null ? permCallback : getDefaultCallback();
@@ -71,7 +71,7 @@ public class PermissionsManager {
                 System.out.println("Exception thrown");
                 throw new RuntimeException(e);
             }
-        }
+        
     }
 
     private static void parseAndSetPermissionsObject(String permissionsFilePath) throws IOException {
