@@ -33,7 +33,8 @@ public class PermissionsManager {
         String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
         setMonitorMode(monitor);
         setEnforcementMode(enforce);
-
+        System.out.println("Monitoring Mode: " + monitor);
+        System.out.println("Enforcement Mode: " + enforce);
         setup(permissionsFilePath, null);
 
     }
