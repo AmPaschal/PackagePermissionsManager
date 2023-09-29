@@ -23,7 +23,7 @@ public class BytecodeGeneratorAgent {
         monitorMode = agentArgs.contains("m");
         enforceMode = agentArgs.contains("e");
         PermissionsManager.setup(monitorMode, enforceMode);
-        =
+        
 
         inst.addTransformer(new BytecodeGenerator(), true);
 
