@@ -58,12 +58,13 @@ public class PermissionsManager {
 
     public static void setup(String permissionsFile, PermissionsCallback permCallback) {
         
-        //TODO: If not in enforcement mode do not return if permissions file is empty
+        
         if ((permissionsFile == null || permissionsFile.isEmpty()) && enforceMode) {
             return;
         }
 //        Set the permissions object
-        
+        if(enforceMode)
+        {
             try {
                 parseAndSetPermissionsObject(permissionsFile);
                 callback = permCallback != null ? permCallback : getDefaultCallback();
@@ -71,6 +72,7 @@ public class PermissionsManager {
                 System.out.println("Exception thrown");
                 throw new RuntimeException(e);
             }
+        }
         
     }
 
