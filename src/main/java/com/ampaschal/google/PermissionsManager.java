@@ -173,7 +173,7 @@ public class PermissionsManager {
 
 
 //        Get the list of permission objects from the stack trace
-        if(enforceMode) {
+        
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
         if (permissionObjects.isEmpty()) {
@@ -181,7 +181,7 @@ public class PermissionsManager {
         }
 
         // System.out.println("Permission count: " + permissionObjects.size());
-
+    if(enforceMode) {
 //        We confirm each package in the stacktrace has the necessary permissions
         for (PermissionObject permissionObject: permissionObjects) {
             boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
