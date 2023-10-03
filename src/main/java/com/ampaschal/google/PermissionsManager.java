@@ -116,9 +116,9 @@ public class PermissionsManager {
         return null;
     }
 
-    private static Set<String> getSubjectPaths() {
+    private static LinkedHashSet<String> getSubjectPaths() {
 //        I used a set to avoid repeated entries. This will reduce the overhead when walking the list
-        Set<String> subjectPaths = new LinkedHashSet<>();
+        LinkedHashSet<String> subjectPaths = new LinkedHashSet<>();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         String currentClass = stackTrace[1].getClassName();
@@ -152,20 +152,21 @@ public class PermissionsManager {
             throw new SecurityException("Invalid Permission Request");
         }
 
-        Set<String> subjectPaths = getSubjectPaths();
-
+        LinkedHashSet<String> subjectPaths = getSubjectPaths();
+        Iterator<String> subjectPathsIterator = subjectPaths.iterator();
         if (subjectPaths.isEmpty()) {
             return;
         }
 
         int subjectPathSize = subjectPaths.size();
+        String subject = subjectPathsIterator.next();
         if(monitorMode) {
         /*System.out.println("Calling callback function");
         System.out.println("Path Size: " + subjectPathSize);
         System.out.println("Resource Type: " + resourceType);
         System.out.println("Resource Op: " + resourceOp);
         System.out.println("Resource Item: " + resourceItem);*/
-        callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
+        callback.onPermissionRequested(subject, subjectPathSize, resourceType, resourceOp, resourceItem);
         }
 
 //        Check the Permissions cache if access is permitted
@@ -183,7 +184,7 @@ public class PermissionsManager {
 //        Get the list of permission objects from the stack trace
         
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
-
+        
         if (permissionObjects.isEmpty()) {
             return;
         }
