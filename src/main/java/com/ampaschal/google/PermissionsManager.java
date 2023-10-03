@@ -173,7 +173,7 @@ public class PermissionsManager {
 
 
 //        Get the list of permission objects from the stack trace
-        
+        System.out.println("Below the callback");
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
         if (permissionObjects.isEmpty()) {
@@ -192,6 +192,7 @@ public class PermissionsManager {
             }
         }
     }
+    System.out.println("Check Permission Finished");
 
     }
 
