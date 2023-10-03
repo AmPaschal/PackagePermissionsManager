@@ -160,6 +160,11 @@ public class PermissionsManager {
 
         int subjectPathSize = subjectPaths.size();
         String subject = subjectPathsIterator.next();
+        System.out.println(subject);
+        while(subjectPathsIterator.hasNext())
+        {
+            System.out.println(subjectPathsIterator.next());
+        }
         if(monitorMode) {
         /*System.out.println("Calling callback function");
         System.out.println("Path Size: " + subjectPathSize);
