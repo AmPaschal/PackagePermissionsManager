@@ -158,6 +158,10 @@ public class PermissionsManager {
         int subjectPathSize = subjectPaths.size();
         if(monitorMode) {
         System.out.println("Calling callback function");
+        System.out.println("Path Size: " + subjectPathSize);
+        System.out.println("Resource Type: " + resourceType);
+        System.out.println("Resource Op: " + resourceOp);
+        System.out.println("Resource Item: " + resourceItem);
         callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
         }
 
