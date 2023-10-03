@@ -63,16 +63,18 @@ public class PermissionsManager {
             return;
         }
 //        Set the permissions object
-        if(enforceMode)
-        {
+        
             try {
-                parseAndSetPermissionsObject(permissionsFile);
-                callback = permCallback != null ? permCallback : getDefaultCallback();
+                if(enforceMode)
+                {
+                    parseAndSetPermissionsObject(permissionsFile);
+                    callback = permCallback != null ? permCallback : getDefaultCallback();
+                }
             } catch (IOException e) {
                 System.out.println("Exception thrown");
                 throw new RuntimeException(e);
             }
-        }
+        
         
     }
 
