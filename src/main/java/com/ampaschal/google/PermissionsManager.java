@@ -4,10 +4,10 @@ import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
 public class PermissionsManager {
 
     private static PermissionsCallback callback;
@@ -74,14 +74,10 @@ public class PermissionsManager {
 
 
         System.out.println("FILE WRITE HERE");
-        ObjectMapper objMapper = new ObjectMapper();
-        try {
-            System.out.println(objMapper.writeValueAsString(monitorObjectMap));
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
+        Gson gson = new Gson();
+        String jsonOut = gson.toJson(monitorObjectMap);
+        System.out.println(jsonOut);
+
         
 
     }
