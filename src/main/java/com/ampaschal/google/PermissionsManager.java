@@ -13,7 +13,7 @@ public class PermissionsManager {
     private static PermissionsCallback callback;
     private static boolean monitorMode;
     private static boolean enforceMode;
-    private static String permFileOutput;
+    //private static String permFileOutput;
     private static long timeLastUpdated, duration;
 
     private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
@@ -33,7 +33,7 @@ public class PermissionsManager {
     public static void setup(boolean monitor, boolean enforce, long durationInput) {
 
         //String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
-        permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
+        //permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
         setMonitorMode(monitor);
         setEnforcementMode(enforce);
         setDuration(durationInput);

@@ -192,6 +192,7 @@
                                     <include>com.fasterxml.jackson.core:jackson-databind:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-annotations:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-core:*</include>
+                                    <include>com.google.code.gson:*</include>
                                     <!-- Add any other dependencies you want to include here -->
                                 </includes>
                             </artifactSet>
