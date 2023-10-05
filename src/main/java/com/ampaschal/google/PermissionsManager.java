@@ -90,31 +90,31 @@ public class PermissionsManager {
         PermissionObject curObject = monitorObjectMap.get(subject);
         if(resourceType == ResourceType.FS) {
             if(resourceOp == ResourceOp.READ) {
-                curObject.setFsRead(true);
+                //curObject.setFsRead(true);
                 curObject.addAllowedPath(resourceItem);
             }
             else if(resourceOp == ResourceOp.WRITE) {
 
-                curObject.setFsWrite(true);
+                //curObject.setFsWrite(true);
                 curObject.addAllowedPath(resourceItem);
             }
 
         }
         else if(resourceType == ResourceType.NET) {
             if(resourceOp == ResourceOp.ACCEPT) {
-                curObject.setNetAccept(true);
+                //curObject.setNetAccept(true);
                 curObject.addAllowedUrl(resourceItem);
 
             }
             else if(resourceOp == ResourceOp.CONNECT) {
-                curObject.setNetConnect(true);
+                //curObject.setNetConnect(true);
                 curObject.addAllowedUrl(resourceItem);
 
             }
 
         }
         else {
-            curObject.setRuntimeExec(true);
+            //curObject.setRuntimeExec(true);
             curObject.addAllowedCommand(resourceItem);
 
         }

@@ -46,18 +46,18 @@ public class PermissionObject {
 
     public PermissionObject()
     {
-        this.fs = true;
-        this.fsRead = true;
-        this.fsWrite = true;
+        this.fs = false;
+        this.fsRead = false;
+        this.fsWrite = false;
         this.allowedPaths = new HashSet<>();
         this.deniedPaths = new HashSet<>();
-        this.net = true;
-        this.netConnect = true;
-        this.netAccept = true;
+        this.net = false;
+        this.netConnect = false;
+        this.netAccept = false;
         this.allowedUrls = new HashSet<>();
         this.deniedUrls = new HashSet<>();
-        this.runtime = true;
-        this.runtimeExec = true;
+        this.runtime = false;
+        this.runtimeExec = false;
         this.allowedCommands = new HashSet<>();
         this.deniedCommands = new HashSet<>();
 
