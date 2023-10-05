@@ -32,14 +32,14 @@ public class PermissionsManager {
 
     public static void setup(boolean monitor, boolean enforce, long durationInput) {
 
-        String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
+        //String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
         permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
         setMonitorMode(monitor);
         setEnforcementMode(enforce);
         setDuration(durationInput);
         System.out.println("Monitoring Mode: " + monitor);
         System.out.println("Enforcement Mode: " + enforce);
-        setup(permissionsFilePath, null);
+        setup("", null);
         timeLastUpdated = System.currentTimeMillis();
 
     }
