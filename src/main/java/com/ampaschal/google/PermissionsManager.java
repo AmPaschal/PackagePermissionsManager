@@ -72,14 +72,16 @@ public class PermissionsManager {
 
     private static void writeJsonFile() {
 
-        ObjectMapper objMapper = new ObjectMapper();
+
+        System.out.println("FILE WRITE HERE");
+        /*ObjectMapper objMapper = new ObjectMapper();
         try {
             objMapper.writeValue(new File(permFileOutput), monitorObjectMap);
         }
         catch(IOException e)
         {
             e.printStackTrace();
-        }
+        }*/
         
 
     }
