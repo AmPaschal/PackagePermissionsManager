@@ -74,14 +74,14 @@ public class PermissionsManager {
 
 
         System.out.println("FILE WRITE HERE");
-        ObjectMapper objMapper = new ObjectMapper();
+        /*ObjectMapper objMapper = new ObjectMapper();
         try {
             objMapper.writeValue(new File(permFileOutput), monitorObjectMap);
         }
         catch(IOException e)
         {
             e.printStackTrace();
-        }
+        }*/
         
 
     }
