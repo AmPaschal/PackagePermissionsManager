@@ -23,9 +23,11 @@ public class EmptyTransformerPermissionsAgent {
 
         boolean monitorMode;
         boolean enforceMode;
+        long duration;
         monitorMode = agentArgs.contains("m");
         enforceMode = agentArgs.contains("e");
-        PermissionsManager.setup(monitorMode, enforceMode);
+        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
+        PermissionsManager.setup(monitorMode, enforceMode, duration);
 
         inst.addTransformer(new ClassFileTransformer() {
             @Override

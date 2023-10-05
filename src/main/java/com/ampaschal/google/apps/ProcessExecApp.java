@@ -11,7 +11,7 @@ public class ProcessExecApp {
 
     public static void main(String[] args) {
 
-        PermissionsManager.setup(true,true);
+        PermissionsManager.setup(true,true,1000);
 
         performShellExec();
     }

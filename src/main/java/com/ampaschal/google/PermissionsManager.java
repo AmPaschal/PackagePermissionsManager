@@ -4,7 +4,6 @@ import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -14,8 +13,11 @@ public class PermissionsManager {
     private static PermissionsCallback callback;
     private static boolean monitorMode;
     private static boolean enforceMode;
+    private static String permFileOutput;
+    private static long timeLastUpdated, duration;
 
     private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
+    private static Map<String, PermissionObject> monitorObjectMap = new HashMap<>();
 
     public static void log() {
         System.out.println("Permissions check will be done here");
@@ -28,14 +30,17 @@ public class PermissionsManager {
         throw new SecurityException("Trying things out");
     }
 
-    public static void setup(boolean monitor, boolean enforce) {
+    public static void setup(boolean monitor, boolean enforce, long durationInput) {
 
         String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
+        permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
         setMonitorMode(monitor);
         setEnforcementMode(enforce);
+        setDuration(durationInput);
         System.out.println("Monitoring Mode: " + monitor);
         System.out.println("Enforcement Mode: " + enforce);
         setup(permissionsFilePath, null);
+        timeLastUpdated = System.currentTimeMillis();
 
     }
 
@@ -45,6 +50,15 @@ public class PermissionsManager {
             public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
                  System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                 updateMonitorMap(subject, subjectPathSize, resourceType, resourceOp, resourceItem);
+
+                 long timeNow = System.currentTimeMillis();
+
+                 if (timeNow - timeLastUpdated > duration) {
+
+                    writeJsonFile();
+
+                 }
 
 
             }
@@ -54,6 +68,58 @@ public class PermissionsManager {
 
             }
         };
+    }
+
+    private static void writeJsonFile() {
+
+        ObjectMapper objMapper = new ObjectMapper();
+        try {
+            objMapper.writeValue(new File(permFileOutput), monitorObjectMap);
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        
+
+    }
+
+    private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+        if(!monitorObjectMap.containsKey(subject)) {
+            //Object already exists
+            monitorObjectMap.put(subject, new PermissionObject());
+        }
+        PermissionObject curObject = monitorObjectMap.get(subject);
+        if(resourceType == ResourceType.FS) {
+            if(resourceOp == ResourceOp.READ) {
+                curObject.setFsRead(true);
+                curObject.addAllowedPath(resourceItem);
+            }
+            else if(resourceOp == ResourceOp.WRITE) {
+
+                curObject.setFsWrite(true);
+                curObject.addAllowedPath(resourceItem);
+            }
+
+        }
+        else if(resourceType == ResourceType.NET) {
+            if(resourceOp == ResourceOp.ACCEPT) {
+                curObject.setNetAccept(true);
+                curObject.addAllowedUrl(resourceItem);
+
+            }
+            else if(resourceOp == ResourceOp.CONNECT) {
+                curObject.setNetConnect(true);
+                curObject.addAllowedUrl(resourceItem);
+
+            }
+
+        }
+        else {
+            curObject.setRuntimeExec(true);
+            curObject.addAllowedCommand(resourceItem);
+
+        }
     }
 
     public static void setup(String permissionsFile, PermissionsCallback permCallback) {
@@ -91,7 +157,10 @@ public class PermissionsManager {
             permissionObjectMap.putAll(permMap);
         }
     }
-
+    private static void setDuration(long durationInput)
+    {
+        duration = durationInput;
+    }
     private static void setMonitorMode(boolean monitor) {
         monitorMode = monitor;
 
@@ -161,10 +230,10 @@ public class PermissionsManager {
         int subjectPathSize = subjectPaths.size();
         String subject = subjectPathsIterator.next();
         System.out.println(subject);
-        while(subjectPathsIterator.hasNext())
+        /*while(subjectPathsIterator.hasNext())
         {
             System.out.println(subjectPathsIterator.next());
-        }
+        }*/
         if(monitorMode) {
         /*System.out.println("Calling callback function");
         System.out.println("Path Size: " + subjectPathSize);

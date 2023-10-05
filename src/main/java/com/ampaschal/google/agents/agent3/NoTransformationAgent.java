@@ -19,9 +19,11 @@ public class NoTransformationAgent {
 
         boolean monitorMode;
         boolean enforceMode;
+        long duration;
         monitorMode = agentArgs.contains("m");
         enforceMode = agentArgs.contains("e");
-        PermissionsManager.setup(monitorMode, enforceMode);
+        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
+        PermissionsManager.setup(monitorMode, enforceMode, duration);
 
         TestHelper.logTime(ProfileKey.AGENT_EXITING);
 

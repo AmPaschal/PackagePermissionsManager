@@ -22,9 +22,11 @@ public class PermissionsAgent {
         System.out.println("Permissions Agent");
         boolean monitorMode;
         boolean enforceMode;
+        long duration;
         monitorMode = agentArgs.contains("m");
         enforceMode = agentArgs.contains("e");
-        PermissionsManager.setup(monitorMode, enforceMode);
+        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
+        PermissionsManager.setup(monitorMode, enforceMode, duration);
 
         inst.addTransformer(new PermissionsTransformer(), true);
 

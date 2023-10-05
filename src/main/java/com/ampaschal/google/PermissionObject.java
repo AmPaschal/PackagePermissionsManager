@@ -2,7 +2,7 @@ package com.ampaschal.google;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
+import java.util.*;
 
 public class PermissionObject {
 
@@ -13,9 +13,9 @@ public class PermissionObject {
     @JsonProperty("fs.write")
     private boolean fsWrite;
     @JsonProperty("fs.allowedPaths")
-    private List<String> allowedPaths;
+    private Set<String> allowedPaths;
     @JsonProperty("fs.deniedPaths")
-    private List<String> deniedPaths;
+    private Set<String> deniedPaths;
 
     @JsonProperty("net")
     private boolean net;
@@ -27,10 +27,10 @@ public class PermissionObject {
     private boolean netAccept;
 
     @JsonProperty("net.allowedUrls")
-    private List<String> allowedUrls;
+    private Set<String> allowedUrls;
 
     @JsonProperty("net.deniedUrls")
-    private List<String> deniedUrls;
+    private Set<String> deniedUrls;
 
     @JsonProperty("runtime")
     private boolean runtime;
@@ -39,10 +39,29 @@ public class PermissionObject {
     private boolean runtimeExec;
 
     @JsonProperty("runtime.allowedCommands")
-    private List<String> allowedCommands;
+    private Set<String> allowedCommands;
 
     @JsonProperty("runtime.deniedCommands")
-    private List<String> deniedCommands;
+    private Set<String> deniedCommands;
+
+    public PermissionObject()
+    {
+        this.fs = true;
+        this.fsRead = true;
+        this.fsWrite = true;
+        this.allowedPaths = new HashSet<>();
+        this.deniedPaths = new HashSet<>();
+        this.net = true;
+        this.netConnect = true;
+        this.netAccept = true;
+        this.allowedUrls = new HashSet<>();
+        this.deniedUrls = new HashSet<>();
+        this.runtime = true;
+        this.runtimeExec = true;
+        this.allowedCommands = new HashSet<>();
+        this.deniedCommands = new HashSet<>();
+
+    }
 
     public boolean isFs() {
         return fs;
@@ -68,19 +87,29 @@ public class PermissionObject {
         this.fsWrite = fsWrite;
     }
 
-    public List<String> getAllowedPaths() {
+    public Set<String> getAllowedPaths() {
         return allowedPaths;
     }
+    
+    public void addAllowedPath(String allowedPath)
+    {
+        this.allowedPaths.add(allowedPath);
+    }
 
-    public void setAllowedPaths(List<String> allowedPaths) {
+    public void setAllowedPaths(Set<String> allowedPaths) {
         this.allowedPaths = allowedPaths;
     }
 
-    public List<String> getDeniedPaths() {
+    public Set<String> getDeniedPaths() {
         return deniedPaths;
     }
 
-    public void setDeniedPaths(List<String> deniedPaths) {
+    public void addDeniedPath(String deniedPath)
+    {
+        this.deniedPaths.add(deniedPath);
+    }
+
+    public void setDeniedPaths(Set<String> deniedPaths) {
         this.deniedPaths = deniedPaths;
     }
 
@@ -108,19 +137,28 @@ public class PermissionObject {
         this.netAccept = netAccept;
     }
 
-    public List<String> getAllowedUrls() {
+    public Set<String> getAllowedUrls() {
         return allowedUrls;
     }
 
-    public void setAllowedUrls(List<String> allowedUrls) {
+    public void addAllowedUrl(String allowedUrl)
+    {
+        this.allowedUrls.add(allowedUrl);
+    }
+
+    public void setAllowedUrls(Set<String> allowedUrls) {
         this.allowedUrls = allowedUrls;
     }
 
-    public List<String> getDeniedUrls() {
+    public Set<String> getDeniedUrls() {
         return deniedUrls;
     }
 
-    public void setDeniedUrls(List<String> deniedUrls) {
+    public void addDeniedUrl(String deniedUrl) {
+        this.deniedUrls.add(deniedUrl);
+    }
+
+    public void setDeniedUrls(Set<String> deniedUrls) {
         this.deniedUrls = deniedUrls;
     }
 
@@ -140,19 +178,25 @@ public class PermissionObject {
         this.runtimeExec = runtimeExec;
     }
 
-    public List<String> getAllowedCommands() {
+    public Set<String> getAllowedCommands() {
         return allowedCommands;
     }
 
-    public void setAllowedCommands(List<String> allowedCommands) {
+    public void addAllowedCommand(String allowedCommand) {
+        this.allowedCommands.add(allowedCommand);
+    }
+
+    public void setAllowedCommands(Set<String> allowedCommands) {
         this.allowedCommands = allowedCommands;
     }
 
-    public List<String> getDeniedCommands() {
+    public Set<String> getDeniedCommands() {
         return deniedCommands;
     }
-
-    public void setDeniedCommands(List<String> deniedCommands) {
+    public void addDeniedCommand(String deniedCommand) {
+        this.deniedCommands.add(deniedCommand);
+    }
+    public void setDeniedCommands(Set<String> deniedCommands) {
         this.deniedCommands = deniedCommands;
     }
 }
