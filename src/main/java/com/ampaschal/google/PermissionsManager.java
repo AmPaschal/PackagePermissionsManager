@@ -76,7 +76,7 @@ public class PermissionsManager {
         System.out.println("FILE WRITE HERE");
         ObjectMapper objMapper = new ObjectMapper();
         try {
-            objMapper.writeValue(new File(permFileOutput), monitorObjectMap);
+            System.out.println(objMapper.writeValueAsString(monitorObjectMap));
         }
         catch(IOException e)
         {
