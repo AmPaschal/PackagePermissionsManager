@@ -2,18 +2,20 @@ package com.ampaschal.google;
 
 import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ampaschal.google.utils.PackagePermissionResolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class PermissionsManager {
 
     private static PermissionsCallback callback;
+    private static PackagePermissionResolver permissionResolver;
 
-    private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
+//    private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
 
     public static void log() {
         System.out.println("Permissions check will be done here");
@@ -28,7 +30,8 @@ public class PermissionsManager {
 
     public static void setup() {
 
-        String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
+        String permissionsFilePath = "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/" +
+                "java/com/ampaschal/google/permfiles/sample-permissions.json";
 
         setup(permissionsFilePath, null);
 
@@ -53,12 +56,14 @@ public class PermissionsManager {
 
     public static void setup(String permissionsFile, PermissionsCallback permCallback) {
 
-        if (permissionsFile == null || permissionsFile.isEmpty()) {
+        if (permissionsFile == null || permissionsFile.isEmpty() || !Files.exists(Paths.get(permissionsFile))) {
+            System.out.println("Permissions File not found");
             return;
         }
 //        Set the permissions object
         try {
-            parseAndSetPermissionsObject(permissionsFile);
+            permissionResolver = new PackagePermissionResolver();
+            permissionResolver.generatePermissionsContext(permissionsFile);
             callback = permCallback != null ? permCallback : getDefaultCallback();
         } catch (IOException e) {
             System.out.println("Exception thrown");
@@ -66,18 +71,18 @@ public class PermissionsManager {
         }
     }
 
-    private static void parseAndSetPermissionsObject(String permissionsFilePath) throws IOException {
-
-        File permissionsFile = new File(permissionsFilePath);
-
-        TypeReference<Map<String, PermissionObject>> typeRef = new TypeReference<Map<String, PermissionObject>>() {};
-
-        Map<String, PermissionObject> permMap = new ObjectMapper().readValue(permissionsFile, typeRef);
-
-        if (permMap != null && !permMap.isEmpty()) {
-            permissionObjectMap.putAll(permMap);
-        }
-    }
+//    private static void parseAndSetPermissionsObject(String permissionsFilePath) throws IOException {
+//
+//        File permissionsFile = new File(permissionsFilePath);
+//
+//        TypeReference<Map<String, PermissionObject>> typeRef = new TypeReference<Map<String, PermissionObject>>() {};
+//
+//        Map<String, PermissionObject> permMap = new ObjectMapper().readValue(permissionsFile, typeRef);
+//
+//        if (permMap != null && !permMap.isEmpty()) {
+//            permissionObjectMap.putAll(permMap);
+//        }
+//    }
 
     private static String getSubjectPath() {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -302,29 +307,29 @@ public class PermissionsManager {
         return packageNameBuilder.toString();
     }
 
-    private static String findClosestPackageName(String subjectPath) {
-        String closestPackageName = null;
-        int longestMatch = 0;
-
-        for (String packageName: permissionObjectMap.keySet()) {
-            if (subjectPath.startsWith(packageName) && packageName.length() > longestMatch) {
-                closestPackageName = packageName;
-                longestMatch = packageName.length();
-            }
-        }
-
-        return closestPackageName;
-
-    }
+//    private static String findClosestPackageName(String subjectPath) {
+//        String closestPackageName = null;
+//        int longestMatch = 0;
+//
+//        for (String packageName: permissionObjectMap.keySet()) {
+//            if (subjectPath.startsWith(packageName) && packageName.length() > longestMatch) {
+//                closestPackageName = packageName;
+//                longestMatch = packageName.length();
+//            }
+//        }
+//
+//        return closestPackageName;
+//
+//    }
 
     private static Set<PermissionObject> getPermissions(Set<String> subjectPaths) {
 
         Set<PermissionObject> permissionObjects = new HashSet<>();
 
         for (String path: subjectPaths) {
-            String packageName = getPackageName(path);
 
-            PermissionObject permObject = permissionObjectMap.get(packageName);
+            PermissionObject permObject = permissionResolver.getPermissionForClassName(path);
+
             if (permObject != null) {
                 permissionObjects.add(permObject);
             }
