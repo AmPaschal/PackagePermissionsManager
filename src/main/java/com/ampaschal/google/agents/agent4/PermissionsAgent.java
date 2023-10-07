@@ -34,7 +34,7 @@ public class PermissionsAgent {
 
         try {
             // We retransform these classes because they are already loaded into the JVM
-            inst.retransformClasses(FileInputStream.class, FileOutputStream.class);
+            inst.retransformClasses(FileInputStream.class, FileOutputStream.class, Socket.class, ProcessBuilder.class);
         } catch (UnmodifiableClassException e) {
             throw new RuntimeException(e);
         }
@@ -46,7 +46,8 @@ public class PermissionsAgent {
     private static Map<String, TransformProps> getTransformPropMap() {
         Map<String, TransformProps> transformPropsMap = new HashMap<String, TransformProps>();
 
-        TransformProps class1 = new TransformProps(getClassName(FileInputStream.class), "<init>", null, ResourceOp.READ.getId());
+        TransformProps class1 = new TransformProps(getClassName(FileInputStream.class), "<init>",
+                Collections.singletonList("(Ljava/io/File;)V"), ResourceOp.READ.getId());
         class1.setTransformProps(ResourceType.FS.getId(), getClassName(FileNotFoundException.class),
                 Arrays.asList("jdk.internal.loader", "sun.misc.URLClassPath$FileLoader"),
                 (methodVisitor, methodName, methodDescriptor) -> {
@@ -66,7 +67,8 @@ public class PermissionsAgent {
         );
         transformPropsMap.put(getClassName(FileInputStream.class), class1);
 
-        TransformProps class2 = new TransformProps(getClassName(FileOutputStream.class), "<init>", null, ResourceOp.WRITE.getId());
+        TransformProps class2 = new TransformProps(getClassName(FileOutputStream.class), "<init>",
+                Collections.singletonList("(Ljava/io/File;Z)V"), ResourceOp.WRITE.getId());
         class2.setTransformProps(ResourceType.FS.getId(), getClassName(FileNotFoundException.class),
                 null,
                 (methodVisitor, methodName, methodDescriptor) -> {
