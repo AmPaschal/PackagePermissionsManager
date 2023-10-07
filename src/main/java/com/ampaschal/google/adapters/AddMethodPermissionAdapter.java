@@ -1,12 +1,15 @@
 package com.ampaschal.google.adapters;
 
+import com.ampaschal.google.entities.TransformProps;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 
-public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
+import java.util.List;
+
+public class AddMethodPermissionAdapter extends LocalVariablesSorter {
 
 
     /** Parameters
@@ -18,11 +21,17 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
      *
      * */
 
-    String methodDescriptor;
+    private String name;
+    private String methodDescriptor;
+    private TransformProps transformProps;
+    private int resourceOp;
 
-    public AddFileReadPermissionAdapter(int access, String desc, MethodVisitor methodVisitor) {
+    public AddMethodPermissionAdapter(int access, String name, String desc, MethodVisitor methodVisitor, TransformProps classProps, int resourceOp) {
         super(Opcodes.ASM9, access, desc, methodVisitor);
+        this.name = name;
         this.methodDescriptor = desc;
+        this.transformProps = classProps;
+        this.resourceOp = resourceOp;
     }
 
     // visitCode is called once for every method. We add our instrumentation here so it appears at the top of the method
@@ -31,50 +40,50 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         super.visitCode();
 
         MethodVisitor methodVisitor = mv;
+        int lv;
 
         Label label0 = new Label();
         Label label1 = new Label();
         Label label2 = new Label();
+        Label label13 = new Label();
+
+        Label rethrownLabel = transformProps.getExceptionRethrown() == null ? label2 : label13;
 
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/IllegalAccessException");
-        methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/reflect/InvocationTargetException");
+        methodVisitor.visitTryCatchBlock(label0, label1, rethrownLabel, "java/lang/reflect/InvocationTargetException");
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/NoSuchMethodException");
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/ClassNotFoundException");
 
-// Optional, if classes are to be excluded
-        Label label3 = new Label();
-        methodVisitor.visitLabel(label3);
-        methodVisitor.visitLineNumber(12, label3);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getStackTrace", "()[Ljava/lang/StackTraceElement;", false);
-        int lv = newLocal(Type.INT_TYPE);
-        methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
-        Label label4 = new Label();
-        methodVisitor.visitLabel(label4);
-        methodVisitor.visitLineNumber(13, label4);
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
-        methodVisitor.visitInsn(Opcodes.ICONST_2);
-        methodVisitor.visitInsn(Opcodes.AALOAD);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/StackTraceElement", "getClassName", "()Ljava/lang/String;", false);
-        lv = newLocal(Type.INT_TYPE);
-        methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
-
-
-//  Can automatically generate this part based on classes to whitelist
-//        Label6 is the exit label
-        Label label5 = new Label();
-        methodVisitor.visitLabel(label5);
-        methodVisitor.visitLineNumber(16, label5);
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
-        methodVisitor.visitLdcInsn("jdk.internal.loader");
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
         Label label6 = new Label();
-        methodVisitor.visitJumpInsn(Opcodes.IFNE, label6);
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
-        methodVisitor.visitLdcInsn("sun.misc.URLClassPath$FileLoader");
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        methodVisitor.visitJumpInsn(Opcodes.IFNE, label6);
-//        Optional Ends
+
+        List<String> excludeClasses = transformProps.getExcludeClasses();
+
+        if (excludeClasses != null && !excludeClasses.isEmpty()) {
+            Label label3 = new Label();
+            methodVisitor.visitLabel(label3);
+            methodVisitor.visitLineNumber(12, label3);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getStackTrace", "()[Ljava/lang/StackTraceElement;", false);
+            lv = newLocal(Type.INT_TYPE);
+            methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
+            Label label4 = new Label();
+            methodVisitor.visitLabel(label4);
+            methodVisitor.visitLineNumber(13, label4);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+            methodVisitor.visitInsn(Opcodes.ICONST_2);
+            methodVisitor.visitInsn(Opcodes.AALOAD);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/StackTraceElement", "getClassName", "()Ljava/lang/String;", false);
+            lv = newLocal(Type.INT_TYPE);
+            methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
+
+            for (String excludeClass: excludeClasses) {
+//                TODO: Optimize and remove this load and store
+                methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+                methodVisitor.visitLdcInsn(excludeClass);
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
+                methodVisitor.visitJumpInsn(Opcodes.IFNE, label6);
+            }
+        }
 
         methodVisitor.visitLabel(label0);
         methodVisitor.visitLineNumber(11, label0);
@@ -114,28 +123,25 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_0);
-        methodVisitor.visitInsn(Opcodes.ICONST_0); // Modifiable
+        methodVisitor.visitInsn(getOpcodeConstant(transformProps.getResourceType())); // Modifiable
         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_1);
-        methodVisitor.visitInsn(Opcodes.ICONST_0);  // Modifiable
+        methodVisitor.visitInsn(getOpcodeConstant(resourceOp));  // Modifiable
         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_2);
 
-//        User supplied. Loads the string variable and place at top of stack
-        if (methodDescriptor.equals("(Ljava/lang/String;)V")) {
-            methodVisitor.visitTypeInsn(Opcodes.NEW, "java/io/File");
-            methodVisitor.visitInsn(Opcodes.DUP);
-            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/io/File", "<init>", "(Ljava/lang/String;)V", false);
-        } else if (methodDescriptor.equals("(Ljava/io/File;)V")) {
-            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+//        This callback should put the resource string at the top of the stack
+//        TODO: Update so instead, it stores at specific variable and returns the variable
+        if (transformProps.getResourceItemCallback() != null) {
+            transformProps.getResourceItemCallback().loadResourceItem(methodVisitor, name, methodDescriptor);
+        } else {
+//            Load the resource item from its index in argument
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, transformProps.getResourceItemIndex());
         }
-
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/File", "getAbsolutePath", "()Ljava/lang/String;", false);
 
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false);
@@ -159,6 +165,11 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitLabel(label6);
         methodVisitor.visitLineNumber(17, label6);
 
+    }
+
+    private int getOpcodeConstant(int constant) {
+//        We transform the resource constants to ASM constant notation
+        return Opcodes.ICONST_0 + constant;
     }
 
 //    @Override

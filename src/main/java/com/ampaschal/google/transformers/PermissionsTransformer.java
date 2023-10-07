@@ -2,6 +2,7 @@ package com.ampaschal.google.transformers;
 
 import com.ampaschal.google.PermissionClassVisitor;
 import com.ampaschal.google.TestHelper;
+import com.ampaschal.google.entities.TransformProps;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.util.TraceClassVisitor;
@@ -10,17 +11,29 @@ import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 public class PermissionsTransformer implements ClassFileTransformer {
+
+    Set<String> targetClasses;
+    Map<String, TransformProps> classProps;
+
+    public PermissionsTransformer(Map<String, TransformProps> classProps) {
+        this.targetClasses = classProps.keySet();
+        this.classProps = classProps;
+    }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            if (className != null && (className.equals("java/io/FileInputStream") || className.equals("java/io/FileOutputStream") || className.equals("java/net/Socket") || className.equals("java/lang/ProcessBuilder"))) {
+//            Use a set and check if the set contains the classname
+            if (className != null && targetClasses.contains(className)) {
                 // System.out.println("Rewriting class: " + className);
                 ClassReader classReader = new ClassReader(classfileBuffer);
                 ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
-                PermissionClassVisitor permClassVisitor = new PermissionClassVisitor(classWriter, className);
+                PermissionClassVisitor permClassVisitor = new PermissionClassVisitor(classWriter, classProps.get(className));
                 classReader.accept(permClassVisitor, ClassReader.EXPAND_FRAMES);
 
                 return classWriter.toByteArray();

@@ -11,8 +11,8 @@ public class AllPermissionsApp {
         TestHelper.logTime(ProfileKey.MAIN_CALLED);
 
         WordCountApp.performFileCount();
-        ReadNetworkApp.performNetworkCount();
-        ProcessExecApp.performShellExec();
+//        ReadNetworkApp.performNetworkCount();
+//        ProcessExecApp.performShellExec();
         FileWriteApp.performFileWriteOperation();
         SocketConnectionApp.performSocketConnection();
 

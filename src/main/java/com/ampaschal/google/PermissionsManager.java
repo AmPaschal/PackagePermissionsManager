@@ -129,9 +129,9 @@ public class PermissionsManager {
 
 //        System.out.println("Permissions Object size: " + permissionObjectMap.size());
 
-        ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt);
+        ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt);  // Change to string
 
-        ResourceOp resourceOp = ResourceOp.getResourceOp(resourceOpInt);
+        ResourceOp resourceOp = ResourceOp.getResourceOp(resourceOpInt);    // Change to string
 
         if (resourceType == null || resourceOp == null) {
             throw new SecurityException("Invalid Permission Request");
@@ -245,6 +245,7 @@ public class PermissionsManager {
     private static boolean performPermissionCheck(PermissionObject permissionObject, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
 //        Permission checking starts from the lowest granularity
+//        Replace with string matching, eg fs.read. If granted, check fs.read.deny; if denied, check fs.read.allow
         if (resourceType == ResourceType.FS) {
             if (permissionObject.getAllowedPaths().contains(resourceItem)) {
                 return true;

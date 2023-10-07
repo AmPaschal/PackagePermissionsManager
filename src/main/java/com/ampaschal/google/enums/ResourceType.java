@@ -8,6 +8,10 @@ public enum ResourceType {
 
     private final int id;
 
+    public int getId() {
+        return id;
+    }
+
     ResourceType(int id) {
         this.id = id;
     }

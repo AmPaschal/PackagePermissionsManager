@@ -18,23 +18,23 @@ public class FilePermissionsTransformer implements ClassFileTransformer {
         if ("java/io/FileOutputStream".equals(className)) {
             TestHelper.logTime(ProfileKey.FILE_TRANSFORMER_CALLED);
         }
-        try {
-            if (className != null && (className.equals("java/io/FileOutputStream") || className.equals("java/net/Socket") || className.equals("java/lang/ProcessBuilder"))) {
-                ClassReader classReader = new ClassReader(classfileBuffer);
-                ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
-                PermissionClassVisitor permClassVisitor = new PermissionClassVisitor(classWriter, className);
-                classReader.accept(permClassVisitor, ClassReader.EXPAND_FRAMES);
-
-                if ("java/io/FileOutputStream".equals(className)) {
-                    TestHelper.logTime(ProfileKey.FILE_TRANSFORMER_EXITING);
-                }
-
-                return classWriter.toByteArray();
-
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+//        try {
+//            if (className != null && (className.equals("java/io/FileOutputStream") || className.equals("java/net/Socket") || className.equals("java/lang/ProcessBuilder"))) {
+//                ClassReader classReader = new ClassReader(classfileBuffer);
+//                ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
+//                PermissionClassVisitor permClassVisitor = new PermissionClassVisitor(classWriter, className);
+//                classReader.accept(permClassVisitor, ClassReader.EXPAND_FRAMES);
+//
+//                if ("java/io/FileOutputStream".equals(className)) {
+//                    TestHelper.logTime(ProfileKey.FILE_TRANSFORMER_EXITING);
+//                }
+//
+//                return classWriter.toByteArray();
+//
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
 
         return classfileBuffer;
     }
