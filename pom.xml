@@ -72,19 +72,19 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>file-perm-agent-jar</id>
+                        <id>exec-perm-agent-jar</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <classifier>file-perm-agent</classifier>
+                            <classifier>exec-perm-agent</classifier>
                             <includes>
                                 <include>com/ampaschal/google/agents/agent2/**</include>
                             </includes>
                             <archive>
                                 <manifestEntries>
                                     <Premain-Class>
-                                        com.ampaschal.google.agents.agent2.FilePermissionsAgent
+                                        com.ampaschal.google.agents.agent2.ExecPermissionsAgent
                                     </Premain-Class>
                                     <Can-Retransform-Classes>
                                         true
@@ -218,6 +218,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
 
 

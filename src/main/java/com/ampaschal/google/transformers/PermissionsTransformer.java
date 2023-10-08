@@ -19,8 +19,9 @@ public class PermissionsTransformer implements ClassFileTransformer {
 
     Set<String> targetClasses;
     Map<String, TransformProps> classProps;
+    boolean debugBytecode;
 
-    public PermissionsTransformer(Map<String, TransformProps> classProps) {
+    public PermissionsTransformer(Map<String, TransformProps> classProps, boolean debug) {
         this.targetClasses = classProps.keySet();
         this.classProps = classProps;
     }
@@ -36,7 +37,15 @@ public class PermissionsTransformer implements ClassFileTransformer {
                 PermissionClassVisitor permClassVisitor = new PermissionClassVisitor(classWriter, classProps.get(className));
                 classReader.accept(permClassVisitor, ClassReader.EXPAND_FRAMES);
 
-                return classWriter.toByteArray();
+                byte[] transformedClass = classWriter.toByteArray();
+
+                if (debugBytecode) {
+                    String transformedFile = "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/java/com/ampaschal/google/transformed/" + className.split("/")[2] + ".class";
+
+                    TestHelper.writeToFile(transformedClass, transformedFile);
+                }
+
+                return transformedClass;
 
             }
         } catch (Exception ex) {

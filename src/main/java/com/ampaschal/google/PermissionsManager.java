@@ -5,6 +5,7 @@ import com.ampaschal.google.enums.ResourceType;
 import com.ampaschal.google.utils.PackagePermissionResolver;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -42,7 +43,7 @@ public class PermissionsManager {
             @Override
             public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+//                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
 
 
             }
@@ -120,7 +121,7 @@ public class PermissionsManager {
         return subjectPaths;
     }
 
-    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem) {
+    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem) throws IOException, FileNotFoundException  {
 
 //        System.out.println("Checking permissions: " + ResourceType.getResourceType(resourceTypeInt) + " - " + ResourceOp.getResourceOp(resourceOpInt)  + " - " + resourceItem);
 
@@ -174,7 +175,11 @@ public class PermissionsManager {
 
             if (!permitted) {
                 callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
-                throw new SecurityException("Access to " + resourceItem + " not permitted");
+                if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
+                    throw new IOException("Permission not granted");
+                } else if (ResourceType.FS.equals(resourceType)) {
+                    throw new FileNotFoundException("Permission not granted");
+                }
             }
         }
 

@@ -45,9 +45,9 @@ public class AddMethodPermissionAdapter extends LocalVariablesSorter {
         Label label0 = new Label();
         Label label1 = new Label();
         Label label2 = new Label();
-        Label label13 = new Label();
+        Label label12 = new Label();
 
-        Label rethrownLabel = transformProps.getExceptionRethrown() == null ? label2 : label13;
+        Label rethrownLabel = transformProps.getExceptionRethrown() == null ? label2 : label12;
 
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/IllegalAccessException");
         methodVisitor.visitTryCatchBlock(label0, label1, rethrownLabel, "java/lang/reflect/InvocationTargetException");
@@ -150,18 +150,61 @@ public class AddMethodPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitLineNumber(16, label1);
         methodVisitor.visitJumpInsn(Opcodes.GOTO, label6);
 
+//        methodVisitor.visitLabel(label2);
+//        methodVisitor.visitLineNumber(14, label2);
+//        lv = newLocal(Type.INT_TYPE);
+//        methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
+//        Label label10 = new Label();    // Label10 here looks useless. Not the target of a jump
+//        methodVisitor.visitLabel(label10);
+//        methodVisitor.visitLineNumber(15, label10);
+//        methodVisitor.visitTypeInsn(Opcodes.NEW, "java/lang/RuntimeException");
+//        methodVisitor.visitInsn(Opcodes.DUP);
+//        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+//        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/Throwable;)V", false);
+//        methodVisitor.visitInsn(Opcodes.ATHROW);
+
         methodVisitor.visitLabel(label2);
-        methodVisitor.visitLineNumber(14, label2);
+        methodVisitor.visitLineNumber(18, label2);
         lv = newLocal(Type.INT_TYPE);
         methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
-        Label label10 = new Label();    // Label10 here looks useless. Not the target of a jump
+        Label label10 = new Label(); // Label7 feels useless. Not the target of any jump
         methodVisitor.visitLabel(label10);
-        methodVisitor.visitLineNumber(15, label10);
-        methodVisitor.visitTypeInsn(Opcodes.NEW, "java/lang/RuntimeException");
-        methodVisitor.visitInsn(Opcodes.DUP);
+        methodVisitor.visitLineNumber(20, label10);
+        methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
         methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/Throwable;)V", false);
+        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+
+
+
+        Label label13 = new Label();
+        methodVisitor.visitLabel(label13);
+        methodVisitor.visitLineNumber(31, label13);
+        methodVisitor.visitJumpInsn(Opcodes.GOTO, label6);
+
+        methodVisitor.visitLabel(label12);
+        methodVisitor.visitLineNumber(25, label12);
+        lv = newLocal(Type.INT_TYPE);
+        methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
+        Label label14 = new Label();
+        methodVisitor.visitLabel(label14);
+        methodVisitor.visitLineNumber(26, label14);
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/InvocationTargetException", "getCause", "()Ljava/lang/Throwable;", false);
+        lv = newLocal(Type.INT_TYPE);
+        methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
+        Label label15 = new Label();
+        methodVisitor.visitLabel(label15);
+        methodVisitor.visitLineNumber(28, label15);
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+        methodVisitor.visitTypeInsn(Opcodes.INSTANCEOF, transformProps.getExceptionRethrown());
+        methodVisitor.visitJumpInsn(Opcodes.IFEQ, label6);
+        Label label16 = new Label();
+        methodVisitor.visitLabel(label16);
+        methodVisitor.visitLineNumber(29, label16);
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
+        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, transformProps.getExceptionRethrown());
         methodVisitor.visitInsn(Opcodes.ATHROW);
+
         methodVisitor.visitLabel(label6);
         methodVisitor.visitLineNumber(17, label6);
 

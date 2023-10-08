@@ -21,3 +21,4 @@ public class AllPermissionsApp {
         TestHelper.logTime(ProfileKey.MAIN_EXITING);
     }
 }
+

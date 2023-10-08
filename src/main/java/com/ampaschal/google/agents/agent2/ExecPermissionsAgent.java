@@ -2,31 +2,33 @@ package com.ampaschal.google.agents.agent2;
 
 import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
+import com.ampaschal.google.agents.agent4.PermissionsAgent;
+import com.ampaschal.google.entities.TransformProps;
 import com.ampaschal.google.enums.ProfileKey;
-import com.ampaschal.google.transformers.FilePermissionsTransformer;
 import com.ampaschal.google.transformers.PermissionsTransformer;
 
-import java.io.FileInputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.net.URL;
+import java.util.Map;
 
-public class FilePermissionsAgent {
+public class ExecPermissionsAgent {
 
 
     public static void premain(String agentArgs, Instrumentation inst) {
 
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
-        System.out.println("Permissions Agent");
+        System.out.println("Exec Permissions Agent");
 
         PermissionsManager.setup();
 
-        inst.addTransformer(new FilePermissionsTransformer(), true);
+        Map<String, TransformProps> transformPropsMap = PermissionsAgent.getTransformPropMap(false, false, false, true);
+
+        inst.addTransformer(new PermissionsTransformer(transformPropsMap, false), true);
 
         try {
-
-            inst.retransformClasses(FileInputStream.class);
+            // We retransform these classes because they are already loaded into the JVM
+            inst.retransformClasses(ProcessBuilder.class);
         } catch (UnmodifiableClassException e) {
             throw new RuntimeException(e);
         }

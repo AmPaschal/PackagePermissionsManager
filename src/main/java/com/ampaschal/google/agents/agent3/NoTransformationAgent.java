@@ -15,9 +15,9 @@ public class NoTransformationAgent {
 
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
-        System.out.println("No transformation Agent");
-
-        PermissionsManager.setup();
+//        System.out.println("No transformation Agent");
+//
+//        PermissionsManager.setup();
 
         TestHelper.logTime(ProfileKey.AGENT_EXITING);
 
