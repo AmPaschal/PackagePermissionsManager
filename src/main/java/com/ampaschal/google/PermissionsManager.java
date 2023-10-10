@@ -148,26 +148,12 @@ public class PermissionsManager {
 
         callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
 
-//        Check the Permissions cache if access is permitted
-//        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
-//
-//        if (cachedPermission != null) {
-//            if (cachedPermission) {
-//                return;
-//            } else {
-//                throw new SecurityException("File read " + resourceItem + " not permitted");
-//            }
-//        }
-
-
 //        Get the list of permission objects from the stack trace
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
         if (permissionObjects.isEmpty()) {
             return;
         }
-
-        // System.out.println("Permission count: " + permissionObjects.size());
 
 //        We confirm each package in the stacktrace has the necessary permissions
         for (PermissionObject permissionObject: permissionObjects) {
@@ -185,7 +171,7 @@ public class PermissionsManager {
 
     }
 
-    public static void checkPermissionEval(int resourceTypeInt, int resourceOpInt, String resourceItem, Set<String> mockSubjectPaths) {
+    public static void checkPermissionEval(int resourceTypeInt, int resourceOpInt, String resourceItem, Set<String> mockSubjectPaths) throws IOException, FileNotFoundException {
 
 //        System.out.println("Checking permissions: " + ResourceType.getResourceType(resourceTypeInt) + " - " + ResourceOp.getResourceOp(resourceOpInt)  + " - " + resourceItem);
 
@@ -214,17 +200,6 @@ public class PermissionsManager {
 
         callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
 
-//        Check the Permissions cache if access is permitted
-//        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
-//
-//        if (cachedPermission != null) {
-//            if (cachedPermission) {
-//                return;
-//            } else {
-//                throw new SecurityException("File read " + resourceItem + " not permitted");
-//            }
-//        }
-
 
 //        Get the list of permission objects from the stack trace
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
@@ -241,7 +216,11 @@ public class PermissionsManager {
 
             if (!permitted) {
                 callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
-                throw new SecurityException("Access to " + resourceItem + " not permitted");
+                if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
+                    throw new IOException("Permission not granted");
+                } else if (ResourceType.FS.equals(resourceType)) {
+                    throw new FileNotFoundException("Permission not granted");
+                }
             }
         }
 
