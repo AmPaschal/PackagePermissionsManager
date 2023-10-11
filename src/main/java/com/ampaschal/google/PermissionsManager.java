@@ -298,7 +298,7 @@ public class PermissionsManager {
         String[] segments = subject.split("[.]");
         System.out.println(Arrays.toString(segments));
         String strippedSubject = segments[0];
-        for(int i = 0; i < numSegments; i++)
+        for(int i = 1; i < numSegments; i++)
         {   
             strippedSubject += "." + segments[i];
         }
