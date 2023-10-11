@@ -54,8 +54,9 @@ public class PermissionsManager {
             @Override
             public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
-                 updateMonitorMap(subject, subjectPathSize, resourceType, resourceOp, resourceItem);
+                String strippedSubject = stripSubject(subject, 3);
+                 System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                 updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
 
                  //long timeNow = System.currentTimeMillis();
 
@@ -289,6 +290,17 @@ public class PermissionsManager {
     }
     
 
+    }
+
+    public static String stripSubject(String subject, int numSegments)
+    {
+        String[] segments = subject.split(".");
+        String strippedSubject = segments[0];
+        for(int i = 0; i < numSegments; i++)
+        {   
+            strippedSubject += "." + segments[i];
+        }
+        return(strippedSubject);
     }
 
     public static void checkPermissionEval(int resourceTypeInt, int resourceOpInt, String resourceItem, Set<String> mockSubjectPaths) {
