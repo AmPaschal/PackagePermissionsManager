@@ -294,7 +294,9 @@ public class PermissionsManager {
 
     public static String stripSubject(String subject, int numSegments)
     {
+        System.out.println(subject);
         String[] segments = subject.split(".");
+        System.out.println(segments);
         String strippedSubject = segments[0];
         for(int i = 0; i < numSegments; i++)
         {   
