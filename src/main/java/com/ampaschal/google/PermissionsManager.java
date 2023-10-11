@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
+import java.io.FileWriter;
+
 import java.util.*;
 public class PermissionsManager {
 
@@ -41,6 +43,9 @@ public class PermissionsManager {
         System.out.println("Enforcement Mode: " + enforce);
         setup("", null);
         timeLastUpdated = System.currentTimeMillis();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() { writeJsonFile(); }
+        });
 
     }
 
@@ -52,13 +57,13 @@ public class PermissionsManager {
                  System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
                  updateMonitorMap(subject, subjectPathSize, resourceType, resourceOp, resourceItem);
 
-                 long timeNow = System.currentTimeMillis();
+                 //long timeNow = System.currentTimeMillis();
 
-                 if (timeNow - timeLastUpdated > duration) {
+                 /*if (timeNow - timeLastUpdated > duration) {
 
                     writeJsonFile();
 
-                 }
+                 }*/
 
 
             }
@@ -76,11 +81,20 @@ public class PermissionsManager {
         System.out.println("FILE WRITE HERE");
         Gson gson = new Gson();
         String jsonOut = gson.toJson(monitorObjectMap);
-        System.out.println(jsonOut);
+        String uniqueFileName = "jsonOut" + UUID.randomUUID().toString() + ".json";
+
+        try {
+            try (FileWriter writer = new FileWriter(uniqueFileName)) {
+                writer.write(jsonOut);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
         
 
-    }
+    
 
     private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
         if(!monitorObjectMap.containsKey(subject)) {
