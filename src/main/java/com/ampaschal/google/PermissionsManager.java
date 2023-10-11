@@ -82,7 +82,7 @@ public class PermissionsManager {
         System.out.println("FILE WRITE HERE");
         Gson gson = new Gson();
         String jsonOut = gson.toJson(monitorObjectMap);
-        String uniqueFileName = "jsonOut" + UUID.randomUUID().toString() + ".json";
+        String uniqueFileName = "/home/robin489/vulnRecreation/jsons/jsonOut" + UUID.randomUUID().toString() + ".json";
 
         try {
             try (FileWriter writer = new FileWriter(uniqueFileName)) {
