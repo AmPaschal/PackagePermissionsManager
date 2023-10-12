@@ -54,7 +54,7 @@ public class PermissionsManager {
             @Override
             public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                String strippedSubject = stripSubject(subject, 3);
+                String strippedSubject = stripSubject(subject, 4);
                  System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
                  updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
 
@@ -298,7 +298,7 @@ public class PermissionsManager {
         String[] segments = subject.split("[.]");
         //System.out.println(Arrays.toString(segments));
         String strippedSubject = segments[0];
-        for(int i = 1; i < numSegments; i++)
+        for(int i = 1; i < numSegments && i < segments.length - 1; i++)
         {   
             strippedSubject += "." + segments[i];
         }
