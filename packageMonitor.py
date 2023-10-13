@@ -52,8 +52,8 @@ try:
             
             if process.returncode != 0:
                 error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
-                error_msg += process.stdout + process.stderr + "\n\n"
-                outputFilePath = "/home/robin489/vulnRecreation/jsons/0" + repo_name + "*"
+                error_msg += process.stderr + "\n\n"
+                outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
                 failFolder = "/home/robin489/vulnRecreation/jsons/failures"
                 subprocess.run(["mv", outputFilePath, failFolder ])
                 log_file.write(error_msg)
