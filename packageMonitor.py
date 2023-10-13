@@ -44,7 +44,7 @@ try:
             repo_name = row[0].split("/")[-1].split(".")[0]
     
             # Set environment variable MAVEN_OPTS
-            os.environ["MAVEN_OPTS"] = "--illegal-access=permit --add-opens java.base/java.lang=ALL-UNNAMED -javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
+            os.environ["MAVEN_OPTS"] = "--illegal-access=permit -javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
             
     
             # Running the test suite using mvn as root
