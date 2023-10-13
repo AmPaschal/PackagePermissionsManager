@@ -56,6 +56,7 @@ try:
                 outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
                 failFolder = "/home/robin489/vulnRecreation/jsons/failures"
                 subprocess.run(["mv", outputFilePath, failFolder ])
+                print(error_msg)
                 log_file.write(error_msg)
                 failure_count += 1
             else:
