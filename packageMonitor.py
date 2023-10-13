@@ -3,7 +3,12 @@ import subprocess
 import os
 import shutil
 import signal
+import requests
+import json
 
+github_api_url = "https://api.github.com/search/repositories"
+output_directory = "/home/robin489/vulnRecreation/dependentPackages"
+os.makedirs(output_directory, exists_ok=True)
 def keyboard_interrupt_handler(sig, frame):
     raise KeyboardInterrupt
 
@@ -22,7 +27,7 @@ try:
     cursor = connection.cursor()
 
     # Execute the query and fetch the first 1000 results
-    query = """SELECT repository_url FROM packages 
+    query = """SELECT DISTINCT repository_url FROM packages 
                WHERE ecosystem LIKE 'maven' 
                AND repository_url LIKE '%github%' 
                ORDER BY dependent_packages_count DESC 
@@ -61,6 +66,24 @@ try:
                 failure_count += 1
             else:
                 success_count+= 1
+            package_name = row[0].split("/")[-1].split(".")[0]
+            params = {
+            "q": f"\"{package_name}\" in:dependency",
+            "sort": "stars",
+            "order": "desc",
+            "per_page": 10
+            }
+            response = requests.get(github_api_url, params=params)
+
+            if response.status_code == 200:
+                result = response.json()
+                dependent_packages = [item['html_url'] for item in result["items"]]
+                file_path = os.path.join(output_directory, f"{repo_name}depends")
+                with open(file_path, 'w') as f:
+                    json.dump(dependent_packages, f, indent=4)
+            else:
+                print(f"Failed to retrieve data from GitHub API for {package_name}")
+                log_file.write(f"Failed to retrieve data from GitHub API for {package_name}")
         except KeyboardInterrupt:
             failure_count += 1
             log_file.write(f"Execution interrupted for {repo_name}\n")
