@@ -28,11 +28,13 @@ try:
     cursor = connection.cursor()
 
     # Execute the query and fetch the first 1000 results
-    query = """SELECT DISTINCT repository_url FROM packages 
-               WHERE ecosystem LIKE 'maven' 
-               AND repository_url LIKE '%github%' 
-               ORDER BY dependent_packages_count DESC 
-               LIMIT 100"""
+    query = """SELECT repository_url
+FROM (
+    SELECT DISTINCT repository_url
+    FROM packages
+    WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%'
+) AS subquery
+ORDER BY dependent_packages_count DESC;"""
 
     cursor.execute(query)
 
