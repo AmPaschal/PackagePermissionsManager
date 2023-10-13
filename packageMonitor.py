@@ -30,11 +30,12 @@ try:
     # Execute the query and fetch the first 1000 results
     query = """SELECT repository_url
 FROM (
-    SELECT DISTINCT repository_url
+    SELECT DISTINCT repository_url, dependent_packages_count
     FROM packages
     WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%'
 ) AS subquery
-ORDER BY dependent_packages_count DESC;"""
+ORDER BY dependent_packages_count DESC
+LIMIT 100;"""
 
     cursor.execute(query)
 
