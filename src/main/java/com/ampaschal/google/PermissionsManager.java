@@ -32,7 +32,7 @@ public class PermissionsManager {
         throw new SecurityException("Trying things out");
     }
 
-    public static void setup(boolean monitor, boolean enforce, long durationInput) {
+    public static void setup(boolean monitor, boolean enforce, long durationInput, String repoName) {
 
         //String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
         //permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
@@ -44,7 +44,7 @@ public class PermissionsManager {
         setup("", null);
         timeLastUpdated = System.currentTimeMillis();
         Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() { writeJsonFile(); }
+            public void run() { writeJsonFile(repoName); }
         });
 
     }
@@ -76,13 +76,13 @@ public class PermissionsManager {
         };
     }
 
-    private static void writeJsonFile() {
+    private static void writeJsonFile(String repoName) {
 
 
         System.out.println("FILE WRITE HERE");
         Gson gson = new Gson();
         String jsonOut = gson.toJson(monitorObjectMap);
-        String uniqueFileName = "/home/robin489/vulnRecreation/jsons/jsonOut" + UUID.randomUUID().toString() + ".json";
+        String uniqueFileName = "/home/robin489/vulnRecreation/jsons/" + repoName  + UUID.randomUUID().toString() + ".json";
 
         try {
             try (FileWriter writer = new FileWriter(uniqueFileName)) {
