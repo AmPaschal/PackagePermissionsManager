@@ -1,6 +1,7 @@
 import psycopg2
 import subprocess
 import os
+import shutil
 
 # Establish a connection to the database
 try:
@@ -25,7 +26,9 @@ try:
 
     # Fetch all the results
     rows = cursor.fetchall()
-
+    log_file = open("mvn_test_errors.log", "w")
+    success_count = 0
+    failure_count = 0
     for row in rows:
         # Cloning each GitHub repository
         subprocess.run(["git", "clone", row[0]])
@@ -38,8 +41,22 @@ try:
         
 
         # Running the test suite using mvn as root
-        subprocess.run(["sudo", "mvn", "test"], cwd=repo_name)
-
+        process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name)
+        
+        if process.returncode != 0:
+            error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
+            error_msg += process.stdout + process.stderr + "\n\n"
+            outputFilePath = "/home/robin489/vulnRecreation/jsons" + repo_name + "*"
+            failFolder = "/home/robin489/vulnRecreation/jsons/failures"
+            subprocess.run(["mv", outputFilePath, failFolder ])
+            log_file.write(error_msg)
+            failure_count += 1
+        else:
+            success_count+= 1
+        shutil.rmtree(repo_name, ignore_errors=True)
+            
+    log_file.write(f"Number of successes: {success_count}\n")
+    log_file.write(f"Number of failures: {failure_count}\n")
 except (Exception, psycopg2.Error) as error:
     print("Error while connecting to PostgreSQL", error)
 
