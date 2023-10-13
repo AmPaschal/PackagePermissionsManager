@@ -8,7 +8,8 @@ import json
 
 github_api_url = "https://api.github.com/search/repositories"
 output_directory = "/home/robin489/vulnRecreation/dependentPackages"
-os.makedirs(output_directory, exists_ok=True)
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
 def keyboard_interrupt_handler(sig, frame):
     raise KeyboardInterrupt
 
