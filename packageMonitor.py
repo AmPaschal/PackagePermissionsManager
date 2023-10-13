@@ -44,11 +44,11 @@ try:
             repo_name = row[0].split("/")[-1].split(".")[0]
     
             # Set environment variable MAVEN_OPTS
-            os.environ["MAVEN_OPTS"] = "--illegal-access=permit -javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
+            os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
             
     
             # Running the test suite using mvn as root
-            process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True)
             
             if process.returncode != 0:
                 error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
