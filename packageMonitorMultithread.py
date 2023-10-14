@@ -20,7 +20,9 @@ counter_lock = Lock()
 def process_row(row):
     global success_count
     global failure_count
+    logging.info(f"Cloning {row}")
     subprocess.run(["git", "clone", row[0]])
+    logging.info(f"Cloned {row}")
 
     # Extracting the repository name
     repo_name = row[0].split("/")[-1].split(".")[0]
@@ -31,13 +33,14 @@ def process_row(row):
     # Set environment variable MAVEN_OPTS
     os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
         
-
+    logging.info(f"Running maven test on {repo_name}")
     # Running the test suite using mvn as root
     process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True)
         
     if process.returncode != 0:
         error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
         error_msg += process.stderr + "\n\n"
+        error_msg = error_msg[0:1000]
         outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
         failFolder = "/home/robin489/vulnRecreation/jsons/failures"
         #subprocess.run(["mv", outputFilePath, failFolder ])
