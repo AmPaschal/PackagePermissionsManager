@@ -37,7 +37,7 @@ LIMIT 100;"""
 
     # Fetch all the results
     rows = cursor.fetchall()
-    log_file = open("mvn_test_errors.log", "w")
+    log_file = open("mvn_test_errors.log", "w", 0)
     success_count = 0
     failure_count = 0
     rows = list(set(rows))
@@ -89,12 +89,13 @@ LIMIT 100;"""
                 log_file.write(f"Failed to retrieve data from GitHub API for {package_name}")
         
         
-    shutil.rmtree(repo_name, ignore_errors=True)
+        shutil.rmtree(repo_name, ignore_errors=True)
             
     log_file.write(f"Number of successes: {success_count}\n")
     log_file.write(f"Number of failures: {failure_count}\n")
 except (Exception, psycopg2.Error) as error:
     print("Error while connecting to PostgreSQL", error)
+    log_file.write("Exception thrown")
 
 finally:
     # Close the connection
@@ -102,3 +103,4 @@ finally:
         cursor.close()
         connection.close()
         print("PostgreSQL connection is closed")
+        log_file.write("Exiting")
