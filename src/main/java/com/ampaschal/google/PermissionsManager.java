@@ -19,7 +19,8 @@ public class PermissionsManager {
     private static long timeLastUpdated, duration;
 
     private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
-    private static Map<String, PermissionObject> monitorObjectMap = new HashMap<>();
+    private static Map<String, PermissionObject> monitorObjectMapDirect = new HashMap<>();
+    private static Map<String, PermissionObject> monitorObjectMapTransitive = new HashMap<>();
 
     public static void log() {
         System.out.println("Permissions check will be done here");
@@ -52,11 +53,22 @@ public class PermissionsManager {
     private static PermissionsCallback getDefaultCallback() {
         return new PermissionsCallback() {
             @Override
-            public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+            public void onPermissionRequested(LinkedHashSet<String> subjectPaths, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
+                Iterator<String> subjectPathsIterator = subjectPaths.iterator();
+                
+
+        
+                String subject = subjectPathsIterator.next();
                 String strippedSubject = stripSubject(subject, 4);
-                 System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
-                 updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
+                System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem, true);
+                for(int i = 1; i < subjectPathSize; i++)
+                {
+                    subject = subjectPathsIterator.next();
+                    strippedSubject = stripSubject(subject, 4);
+                    updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem, false);
+                }
 
                  //long timeNow = System.currentTimeMillis();
 
@@ -81,12 +93,20 @@ public class PermissionsManager {
 
         System.out.println("FILE WRITE HERE");
         Gson gson = new Gson();
-        String jsonOut = gson.toJson(monitorObjectMap);
-        String uniqueFileName = "/home/robin489/vulnRecreation/jsons/" + repoName  + ".json";
-
+        String jsonOutDirect = gson.toJson(monitorObjectMapDirect);
+        String jsonOutTransitive = gson.toJson(monitorObjectMapTransitive);
+        String directFileName = "/home/robin489/vulnRecreation/jsons/" + repoName  + "Direct.json";
+        String transitiveFileName = "/home/robin489/vulnRecreation/jsons/" + repoName + "Transitive.json";
         try {
-            try (FileWriter writer = new FileWriter(uniqueFileName)) {
-                writer.write(jsonOut);
+            try (FileWriter writer = new FileWriter(directFileName)) {
+                writer.write(jsonOutDirect);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            try (FileWriter writer = new FileWriter(transitiveFileName)) {
+                writer.write(jsonOutTransitive);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,40 +117,61 @@ public class PermissionsManager {
 
     
 
-    private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
-        if(!monitorObjectMap.containsKey(subject)) {
+    private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem, boolean direct) {
+        if(!monitorObjectMapDirect.containsKey(subject)) {
             //Object already exists
-            monitorObjectMap.put(subject, new PermissionObject());
+            if(direct) { 
+            monitorObjectMapDirect.put(subject, new PermissionObject());
+            }
+            monitorObjectMapTransitive.put(subject, new PermissionObject());
+
         }
-        PermissionObject curObject = monitorObjectMap.get(subject);
+        PermissionObject curObjectDirect = monitorObjectMapTransitive.get(subject);
+        PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
+        
         if(resourceType == ResourceType.FS) {
             if(resourceOp == ResourceOp.READ) {
                 //curObject.setFsRead(true);
-                curObject.addAllowedPath(resourceItem);
+                if(direct) {
+                curObjectDirect.addAllowedPath(resourceItem);
+                }
+                curObjectTransitive.addAllowedPath(resourceItem);
             }
             else if(resourceOp == ResourceOp.WRITE) {
 
                 //curObject.setFsWrite(true);
-                curObject.addAllowedPath(resourceItem);
+                if(direct) {
+                curObjectDirect.addAllowedPath(resourceItem);
+                }
+                curObjectTransitive.addAllowedPath(resourceItem);
             }
 
         }
         else if(resourceType == ResourceType.NET) {
             if(resourceOp == ResourceOp.ACCEPT) {
                 //curObject.setNetAccept(true);
-                curObject.addAllowedUrl(resourceItem);
+                if(direct) {
+                curObjectDirect.addAllowedUrl(resourceItem);
+                }
+                curObjectTransitive.addAllowedUrl(resourceItem);
 
             }
             else if(resourceOp == ResourceOp.CONNECT) {
                 //curObject.setNetConnect(true);
-                curObject.addAllowedUrl(resourceItem);
+                if(direct) {
+                curObjectDirect.addAllowedUrl(resourceItem);
+                }
+                curObjectTransitive.addAllowedUrl(resourceItem);
 
             }
 
         }
         else {
             //curObject.setRuntimeExec(true);
-            curObject.addAllowedCommand(resourceItem);
+            if(direct) {
+            curObjectDirect.addAllowedCommand(resourceItem);
+            }
+            curObjectTransitive.addAllowedCommand(resourceItem);
 
         }
     }
@@ -235,14 +276,9 @@ public class PermissionsManager {
         }
 
         LinkedHashSet<String> subjectPaths = getSubjectPaths();
-        Iterator<String> subjectPathsIterator = subjectPaths.iterator();
-        if (subjectPaths.isEmpty()) {
-            return;
-        }
-
+        
+        
         int subjectPathSize = subjectPaths.size();
-        String subject = subjectPathsIterator.next();
-        System.out.println(subject);
         /*while(subjectPathsIterator.hasNext())
         {
             System.out.println(subjectPathsIterator.next());
@@ -253,7 +289,7 @@ public class PermissionsManager {
         System.out.println("Resource Type: " + resourceType);
         System.out.println("Resource Op: " + resourceOp);
         System.out.println("Resource Item: " + resourceItem);*/
-        callback.onPermissionRequested(subject, subjectPathSize, resourceType, resourceOp, resourceItem);
+        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem);
         }
 
 //        Check the Permissions cache if access is permitted
