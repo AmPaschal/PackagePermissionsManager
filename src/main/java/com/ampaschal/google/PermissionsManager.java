@@ -62,12 +62,13 @@ public class PermissionsManager {
                 String subject = subjectPathsIterator.next();
                 String strippedSubject = stripSubject(subject, 4);
                 System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
-                updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem, true);
+                updateMonitorMapDirect(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
+                updateMonitorMapTransitive(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
                 for(int i = 1; i < subjectPathSize; i++)
                 {
                     subject = subjectPathsIterator.next();
                     strippedSubject = stripSubject(subject, 4);
-                    updateMonitorMap(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem, false);
+                    updateMonitorMapTransitive(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
                 }
 
                  //long timeNow = System.currentTimeMillis();
@@ -117,65 +118,114 @@ public class PermissionsManager {
 
     
 
-    private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem, boolean direct) {
-        if(!monitorObjectMapDirect.containsKey(subject) && direct) {
-            //Object already exists
+    private static void updateMonitorMapDirect(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+       
             
-            monitorObjectMapDirect.put(subject, new PermissionObject());
+
+            if(!monitorObjectMapDirect.containsKey(subject))
+            {
+                monitorObjectMapDirect.put(subject, new PermissionObject());
+            }
             
+        
+       
+           
             
-        }
-        if(!monitorObjectMapTransitive.containsKey(subject))
-        {
-            monitorObjectMapTransitive.put(subject, new PermissionObject());
-            
-        }
+        
         PermissionObject curObjectDirect = monitorObjectMapDirect.get(subject);
-        PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
+        
         
         if(resourceType == ResourceType.FS) {
             if(resourceOp == ResourceOp.READ) {
                 //curObject.setFsRead(true);
-                if(direct) {
+                
                 curObjectDirect.addAllowedPath(resourceItem);
-                }
-                curObjectTransitive.addAllowedPath(resourceItem);
+                
+                
             }
             else if(resourceOp == ResourceOp.WRITE) {
 
                 //curObject.setFsWrite(true);
-                if(direct) {
-                curObjectDirect.addAllowedPath(resourceItem);
-                }
-                curObjectTransitive.addAllowedPath(resourceItem);
+                
+                curObjectDirect.addAllowedPath(resourceItem); 
+                
             }
 
         }
         else if(resourceType == ResourceType.NET) {
             if(resourceOp == ResourceOp.ACCEPT) {
                 //curObject.setNetAccept(true);
-                if(direct) {
+                
                 curObjectDirect.addAllowedUrl(resourceItem);
-                }
-                curObjectTransitive.addAllowedUrl(resourceItem);
 
             }
             else if(resourceOp == ResourceOp.CONNECT) {
                 //curObject.setNetConnect(true);
-                if(direct) {
-                curObjectDirect.addAllowedUrl(resourceItem);
-                }
-                curObjectTransitive.addAllowedUrl(resourceItem);
-
+                
+                curObjectDirect.addAllowedUrl(resourceItem);   
+                
             }
 
         }
         else {
             //curObject.setRuntimeExec(true);
-            if(direct) {
-            curObjectDirect.addAllowedCommand(resourceItem);
+            curObjectDirect.addAllowedCommand(resourceItem);    
+
+        }
+    }
+
+    private static void updateMonitorMapTransitive(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+       
+            
+
+            if(!monitorObjectMapTransitive.containsKey(subject))
+            {
+                monitorObjectMapTransitive.put(subject, new PermissionObject());
             }
-            curObjectTransitive.addAllowedCommand(resourceItem);
+            
+        
+       
+           
+            
+        
+        PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
+        
+        
+        if(resourceType == ResourceType.FS) {
+            if(resourceOp == ResourceOp.READ) {
+                //curObject.setFsRead(true);
+                
+                curObjectTransitive.addAllowedPath(resourceItem);
+                
+                
+            }
+            else if(resourceOp == ResourceOp.WRITE) {
+
+                //curObject.setFsWrite(true);
+                
+                curObjectTransitive.addAllowedPath(resourceItem); 
+                
+            }
+
+        }
+        else if(resourceType == ResourceType.NET) {
+            if(resourceOp == ResourceOp.ACCEPT) {
+                //curObject.setNetAccept(true);
+                
+                curObjectTransitive.addAllowedUrl(resourceItem);
+
+            }
+            else if(resourceOp == ResourceOp.CONNECT) {
+                //curObject.setNetConnect(true);
+                
+                curObjectTransitive.addAllowedUrl(resourceItem);   
+                
+            }
+
+        }
+        else {
+            //curObject.setRuntimeExec(true);
+            curObjectTransitive.addAllowedCommand(resourceItem);    
 
         }
     }
