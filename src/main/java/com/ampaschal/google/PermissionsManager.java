@@ -118,15 +118,19 @@ public class PermissionsManager {
     
 
     private static void updateMonitorMap(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem, boolean direct) {
-        if(!monitorObjectMapDirect.containsKey(subject)) {
+        if(!monitorObjectMapDirect.containsKey(subject) && direct) {
             //Object already exists
-            if(direct) { 
+            
             monitorObjectMapDirect.put(subject, new PermissionObject());
-            }
-            monitorObjectMapTransitive.put(subject, new PermissionObject());
-
+            
+            
         }
-        PermissionObject curObjectDirect = monitorObjectMapTransitive.get(subject);
+        if(!monitorObjectMapTransitive.containsKey(subject))
+        {
+            monitorObjectMapTransitive.put(subject, new PermissionObject());
+            
+        }
+        PermissionObject curObjectDirect = monitorObjectMapDirect.get(subject);
         PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
         
         if(resourceType == ResourceType.FS) {
