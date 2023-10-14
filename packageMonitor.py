@@ -4,7 +4,7 @@ import os
 import shutil
 import requests
 import json
-
+import sys
 github_api_url = "https://api.github.com/search/repositories"
 output_directory = "/home/robin489/vulnRecreation/dependentPackages"
 if not os.path.exists(output_directory):
@@ -61,7 +61,7 @@ LIMIT 100;"""
             error_msg += process.stderr + "\n\n"
             outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
             failFolder = "/home/robin489/vulnRecreation/jsons/failures"
-            subprocess.run(["mv", outputFilePath, failFolder ])
+            #subprocess.run(["mv", outputFilePath, failFolder ])
             print(error_msg)
             log_file.write(error_msg)
             failure_count += 1
@@ -94,8 +94,10 @@ LIMIT 100;"""
     log_file.write(f"Number of successes: {success_count}\n")
     log_file.write(f"Number of failures: {failure_count}\n")
 except (Exception, psycopg2.Error) as error:
+    print(sys.exc_traceback.tb_lineno)
     print("Error while connecting to PostgreSQL", error)
-    log_file.write("Exception thrown")
+    log_file.write("Exception thrown\n")
+    log_file.write(sys.exc_traceback)
 
 finally:
     # Close the connection
