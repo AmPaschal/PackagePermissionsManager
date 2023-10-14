@@ -44,7 +44,7 @@ def process_json_file(json_file_path, num_common_prefixes):
 
             app_data['allowedPaths'] = minimized_paths
 
-    # Save the modified JSON data
+    # Save the modified JSON data back to the file
     with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=2)
 
