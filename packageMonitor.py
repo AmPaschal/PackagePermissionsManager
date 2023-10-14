@@ -47,7 +47,7 @@ LIMIT 100;"""
         subprocess.run(["git", "clone", row[0]])
     
         # Extracting the repository name
-        repo_name = row[0].split("/")[-1]
+        repo_name = row[0].split("/")[-1].split(".")[0]
     
         # Set environment variable MAVEN_OPTS
         os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
@@ -94,10 +94,10 @@ LIMIT 100;"""
     log_file.write(f"Number of successes: {success_count}\n")
     log_file.write(f"Number of failures: {failure_count}\n")
 except (Exception, psycopg2.Error) as error:
-    print(sys.exc_traceback.tb_lineno)
+    print(sys.exec_traceback.tb_lineno)
     print("Error while connecting to PostgreSQL", error)
     log_file.write("Exception thrown\n")
-    log_file.write(sys.exc_traceback)
+    log_file.write(sys.exec_traceback)
 
 finally:
     # Close the connection
