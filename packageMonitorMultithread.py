@@ -97,7 +97,7 @@ LIMIT 100;"""
     rows = list(set(rows))
     
     with ThreadPoolExecutor(max_workers=5) as executor:
-        executor.map(process_row, cursor.fetchall())
+        executor.map(process_row, rows)
         
         # Cloning each GitHub repository
         
