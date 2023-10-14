@@ -39,10 +39,10 @@ def process_github_link(link,file):
         logging.error(f"Error processing {link}: {error}")
 
 # Process each GitHub link in the directory
-with ThreadPoolExecutor(max_workers=5) as executor:
-    for file in os.listdir(github_links_directory):
-        if file.endswith("depends"):
-            with open(os.path.join(github_links_directory, file), 'r') as f:
-                dependent_packages = json.load(f)
-                for link in dependent_packages:
-                    process_github_link(link,file)
+for file in os.listdir(github_links_directory):
+    if file.endswith("depends"):
+        with open(os.path.join(github_links_directory, file), 'r') as f:
+            dependent_packages = json.load(f)
+            with ThreadPoolExecutor(max_workers=5) as executor:   
+                 for link in dependent_packages:
+                     process_github_link(link,file)
