@@ -24,9 +24,9 @@ cursor.execute(query)
     # Fetch all the results
 
 rows = cursor.fetchall()
-row_size = rows.length()
+row_size = len(rows)
 log_file = open("mvn_test_errors.log", "w")
 rows = list(set(rows))
-set_size = rows.length()
+set_size = len(rows)
 
 print(f"Row size:{row_size}, Set size:{set_size}")
