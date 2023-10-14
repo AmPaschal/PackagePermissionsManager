@@ -18,10 +18,19 @@ def process_github_link(link,file):
         path_exists = os.path.exists(repo_name)
         if not path_exists:
             repo_name = link.split("/")[-1]
+        dir_path = "/home/robin489/vulnRecreation/jsons/" + file    
+        if not os.path.exists(dir_path):
+            try:
+                os.makedirs(dir_path)
+                logging.info(f"Directory created at {dir_path}")
+            except OSError as e:
+                logging.error(f"Failed to create directory at {dir_path}: {e}")
+        else:
+            logging.info(f"The directory at {dir_path} already exists")
 
         # Set environment variable MAVEN_OPTS
         os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + file +"/" + repo_name
-
+        logging.info(f"File name is {file} and repo name is {repo_name}")
         # Running the test suite using mvn as root with environment variables preserved
         process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
