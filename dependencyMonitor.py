@@ -37,6 +37,17 @@ def process_github_link(link,file):
         if process.returncode != 0:
             error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
             error_msg += process.stdout + process.stderr + "\n\n"
+            direct_file_name = dir_path + "/" + repo_name + "Direct.json"
+            indirect_file_name = dir_path + "/" + repo_name + "Transitive.json"
+            if os.path.exists(direct_file_name):
+                try:
+                    os.remove(direct_file_name)
+                    os.remove(indirect_file_name)
+                    logging.info(f"Json at {direct_file_name} has been removed")
+                except OSError as e:
+                    print(f"There was an error removing the file: {e}")
+            else:
+                print(f"The file at {direct_file_name} does not exist.")
             logging.error(error_msg)
         else:
             logging.info(f"Successfully processed {link}")
