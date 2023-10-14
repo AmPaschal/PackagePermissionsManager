@@ -37,7 +37,7 @@ LIMIT 100;"""
 
     # Fetch all the results
     rows = cursor.fetchall()
-    log_file = open("mvn_test_errors.log", "w", 0)
+    log_file = open("mvn_test_errors.log", "w")
     success_count = 0
     failure_count = 0
     rows = list(set(rows))
@@ -88,7 +88,7 @@ LIMIT 100;"""
                 print(f"Failed to retrieve data from GitHub API for {package_name}")
                 log_file.write(f"Failed to retrieve data from GitHub API for {package_name}")
         
-        
+        log_file.flush()
         shutil.rmtree(repo_name, ignore_errors=True)
             
     log_file.write(f"Number of successes: {success_count}\n")
