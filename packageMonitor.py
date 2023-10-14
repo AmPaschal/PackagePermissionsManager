@@ -47,7 +47,7 @@ LIMIT 100;"""
         subprocess.run(["git", "clone", row[0]])
     
         # Extracting the repository name
-        repo_name = row[0].split("/")[-1].split(".")[0]
+        repo_name = row[0].split("/")[-1]
     
         # Set environment variable MAVEN_OPTS
         os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
