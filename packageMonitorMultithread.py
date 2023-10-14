@@ -4,11 +4,13 @@ import os
 import shutil
 import requests
 import json
+import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 github_api_url = "https://api.github.com/search/repositories"
 output_directory = "/home/robin489/vulnRecreation/dependentPackages"
+logging.basicConfig(filename='inital_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 failure_count = 0
@@ -40,12 +42,12 @@ def process_row(row):
         failFolder = "/home/robin489/vulnRecreation/jsons/failures"
         #subprocess.run(["mv", outputFilePath, failFolder ])
         print(error_msg)
-        log_file.write(error_msg)
+        logging.error(error_msg)
         failure_count += 1
     else:
         success_count+= 1
         success_msg = f"Succesfully wrote {repo_name}\n"
-        log_file.write(success_msg)
+        logging.info(success_msg)
         package_name = row[0].split("/")[-1].split(".")[0]
         params = {
         "q": f"\"{package_name}\" in:dependency",
@@ -56,15 +58,20 @@ def process_row(row):
         response = requests.get(github_api_url, params=params)
 
         if response.status_code == 200:
+            logging.info("Received response from Github")
             result = response.json()
             dependent_packages = [item['html_url'] for item in result["items"]]
+            dep_size = len(dependent_packages)
+            logging.info(f"Before removal dep_size: {dep_size}")
             dependent_packages.remove(row)
+            dep_size = len(dependent_packages)
+            logging.info(f"After removal dep_size: {dep_size}")
             file_path = os.path.join(output_directory, f"{repo_name}depends")
             with open(file_path, 'w') as f:
                 json.dump(dependent_packages, f, indent=4)
         else:
             print(f"Failed to retrieve data from GitHub API for {package_name}")
-            log_file.write(f"Failed to retrieve data from GitHub API for {package_name}")
+            logging.error(f"Failed to retrieve data from GitHub API for {package_name}")
     
     log_file.flush()
     shutil.rmtree(repo_name, ignore_errors=True)
