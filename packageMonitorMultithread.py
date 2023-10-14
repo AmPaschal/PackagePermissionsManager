@@ -60,13 +60,13 @@ def process_row(row):
         if response.status_code == 200:
             logging.info("Received response from Github")
             result = response.json()
-            dependent_packages = [item['html_url'] for item in result["items"]]
+            dependent_packages = [item['html_url'] for item in result["items"] if package_name not in item['html_url']]
             dep_size = len(dependent_packages)
             logging.info(f"Before removal dep_size: {dep_size}")
-            dependent_packages.remove(row)
-            dep_size = len(dependent_packages)
-            logging.info(f"After removal dep_size: {dep_size}")
+            
+            
             file_path = os.path.join(output_directory, f"{repo_name}depends")
+            logging.info(f"Writing dependency information to {repo_name}depends")
             with open(file_path, 'w') as f:
                 json.dump(dependent_packages, f, indent=4)
         else:
