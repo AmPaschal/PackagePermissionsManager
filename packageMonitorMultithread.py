@@ -58,6 +58,7 @@ def process_row(row):
         if response.status_code == 200:
             result = response.json()
             dependent_packages = [item['html_url'] for item in result["items"]]
+            dependent_packages.remove(row)
             file_path = os.path.join(output_directory, f"{repo_name}depends")
             with open(file_path, 'w') as f:
                 json.dump(dependent_packages, f, indent=4)
