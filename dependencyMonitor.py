@@ -2,6 +2,7 @@ import subprocess
 import os
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 # Directory containing the GitHub links
 github_links_directory = "/home/robin489/vulnRecreation/dependentPackages"
@@ -38,9 +39,10 @@ def process_github_link(link,file):
         logging.error(f"Error processing {link}: {error}")
 
 # Process each GitHub link in the directory
-for file in os.listdir(github_links_directory):
-    if file.endswith("depends"):
-        with open(os.path.join(github_links_directory, file), 'r') as f:
-            dependent_packages = json.load(f)
-            for link in dependent_packages:
-                process_github_link(link,file)
+with ThreadPoolExecutor(max_workers=5) as executor:
+    for file in os.listdir(github_links_directory):
+        if file.endswith("depends"):
+            with open(os.path.join(github_links_directory, file), 'r') as f:
+                dependent_packages = json.load(f)
+                for link in dependent_packages:
+                    process_github_link(link,file)
