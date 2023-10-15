@@ -3,7 +3,9 @@ import subprocess
 import os
 import shutil
 import requests
+import psutil
 import json
+import time
 import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -37,7 +39,18 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.Popen(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        for _ in range(600):
+            if process.poll() is not None:
+                break
+            time.sleep(1)
+        else:
+            timeout_counter+= 1;
+            logging.info("Timeout occured while processing {repo_name}")
+            process = psutil.Process(process.pid)
+            for child in process.children(recursive=True):
+                child.kill()
+            process.kill()
             
         if process.returncode != 0:
             error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
