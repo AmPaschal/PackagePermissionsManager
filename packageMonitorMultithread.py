@@ -18,63 +18,68 @@ success_count = 0
 counter_lock = Lock()
 
 def process_row(row):
+    global timeout_counter
     global success_count
     global failure_count
-    logging.info(f"Cloning {row}")
-    subprocess.run(["git", "clone", row[0]])
-    logging.info(f"Cloned {row}")
-
-    # Extracting the repository name
-    repo_name = row[0].split("/")[-1].split(".")[0]
-    path_exists = os.path.exists(repo_name)
-    if not path_exists:
-        repo_name = row[0].split("/")[-1]
-        
-    # Set environment variable MAVEN_OPTS
-    os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
-        
-    logging.info(f"Running maven test on {repo_name}")
-    # Running the test suite using mvn as root
-    process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True)
-        
-    if process.returncode != 0:
-        error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
-        error_msg += process.stderr + "\n\n"
-        error_msg = error_msg[0:1000]
-        outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
-        failFolder = "/home/robin489/vulnRecreation/jsons/failures"
-        #subprocess.run(["mv", outputFilePath, failFolder ])
-        print(error_msg)
-        logging.error(error_msg)
-        failure_count += 1
-    else:
-        success_count+= 1
-        success_msg = f"Succesfully wrote {repo_name}\n"
-        logging.info(success_msg)
-        package_name = row[0].split("/")[-1].split(".")[0]
-        params = {
-        "q": f"\"{package_name}\" in:dependency",
-        "sort": "stars",
-        "order": "desc",
-        "per_page": 10
-        }
-        response = requests.get(github_api_url, params=params)
-
-        if response.status_code == 200:
-            logging.info("Received response from Github")
-            result = response.json()
-            dependent_packages = [item['html_url'] for item in result["items"] if package_name not in item['html_url']]
-            dep_size = len(dependent_packages)
-            logging.info(f"Before removal dep_size: {dep_size}")
+    try:
+        logging.info(f"Cloning {row}")
+        subprocess.run(["git", "clone", row[0]])
+        logging.info(f"Cloned {row}")
+    
+        # Extracting the repository name
+        repo_name = row[0].split("/")[-1].split(".")[0]
+        path_exists = os.path.exists(repo_name)
+        if not path_exists:
+            repo_name = row[0].split("/")[-1]
             
+        # Set environment variable MAVEN_OPTS
+        os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
             
-            file_path = os.path.join(output_directory, f"{repo_name}depends")
-            logging.info(f"Writing dependency information to {repo_name}depends")
-            with open(file_path, 'w') as f:
-                json.dump(dependent_packages, f, indent=4)
+        logging.info(f"Running maven test on {repo_name}")
+        # Running the test suite using mvn as root
+        process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+            
+        if process.returncode != 0:
+            error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
+            error_msg += process.stderr + "\n\n"
+            error_msg = error_msg[0:1000]
+            outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
+            failFolder = "/home/robin489/vulnRecreation/jsons/failures"
+            #subprocess.run(["mv", outputFilePath, failFolder ])
+            print(error_msg)
+            logging.error(error_msg)
+            failure_count += 1
         else:
-            print(f"Failed to retrieve data from GitHub API for {package_name}")
-            logging.error(f"Failed to retrieve data from GitHub API for {package_name}")
+            success_count+= 1
+            success_msg = f"Succesfully wrote {repo_name}\n"
+            logging.info(success_msg)
+            package_name = row[0].split("/")[-1].split(".")[0]
+            params = {
+            "q": f"\"{package_name}\" in:dependency",
+            "sort": "stars",
+            "order": "desc",
+            "per_page": 10
+            }
+            response = requests.get(github_api_url, params=params)
+    
+            if response.status_code == 200:
+                logging.info("Received response from Github")
+                result = response.json()
+                dependent_packages = [item['html_url'] for item in result["items"] if package_name not in item['html_url']]
+                dep_size = len(dependent_packages)
+                logging.info(f"Before removal dep_size: {dep_size}")
+                
+                
+                file_path = os.path.join(output_directory, f"{repo_name}depends")
+                logging.info(f"Writing dependency information to {repo_name}depends")
+                with open(file_path, 'w') as f:
+                    json.dump(dependent_packages, f, indent=4)
+            else:
+                print(f"Failed to retrieve data from GitHub API for {package_name}")
+                logging.error(f"Failed to retrieve data from GitHub API for {package_name}")
+    except subprocess.TimeoutExpired:
+        timeout_counter += 1
+        logging.info(f"Timeout occured while running 'mvn test' in {repo_name}")
     
     log_file.flush()
     shutil.rmtree(repo_name, ignore_errors=True)
@@ -90,7 +95,7 @@ try:
     )
 
     cursor = connection.cursor()
-
+    logging.info("Starting db query")
     # Execute the query and fetch the first 1000 results
     query = """SELECT repository_url
 FROM (
