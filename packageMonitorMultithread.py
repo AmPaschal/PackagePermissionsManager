@@ -42,7 +42,7 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true", ">", "maven_build.out"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true", ">", f"{repo_name}_maven_build.out"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
         
         
         success_count+= 1
@@ -81,9 +81,11 @@ def process_row(row):
     except subprocess.TimeoutExpired:
         timeout_counter += 1
         logging.info(f"Timeout occured while running 'mvn test' in {repo_name}")
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         failure_count += 1
         logging.info(f"{repo_name} had an error while running mvn test")
+        logging.info(f"Error code {e.returncode}")
+        logging.info(f"Error output: {e.output}")
     except Exception as error:
         logging.info(f"Error processing {row[0]}: {error}")
         exc_type, exc_obj, tb = sys.exc_info()
