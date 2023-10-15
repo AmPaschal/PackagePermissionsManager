@@ -1,6 +1,7 @@
 import subprocess
 import os
 import json
+import shutil
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -9,7 +10,9 @@ github_access_token = ""
 github_links_directory = "/home/robin489/vulnRecreation/dependentPackages"
 logging.basicConfig(filename='github_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 # Function to process each GitHub link
+timeout_counter = 0
 def process_github_link(link,file):
+    global timeout_counter
     try:
         # Cloning each GitHub repository
         clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
@@ -34,29 +37,32 @@ def process_github_link(link,file):
         os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + file +"/" + repo_name
         logging.info(f"File name is {file} and repo name is {repo_name}")
         # Running the test suite using mvn as root with environment variables preserved
-        process = subprocess.run(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
 
-        if process.returncode != 0:
-            error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
-            error_msg += process.stdout + process.stderr + "\n\n"
-            direct_file_name = dir_path + "/" + repo_name + "Direct.json"
-            indirect_file_name = dir_path + "/" + repo_name + "Transitive.json"
-            if os.path.exists(direct_file_name):
-                try:
-                    os.remove(direct_file_name)
-                    os.remove(indirect_file_name)
-                    logging.info(f"Json at {direct_file_name} has been removed")
-                except OSError as e:
-                    print(f"There was an error removing the file: {e}")
-            else:
-                print(f"The file at {direct_file_name} does not exist.")
-            logging.error(error_msg)
-        else:
-            logging.info(f"Successfully processed {link}")
+        
+        logging.info(f"Successfully processed {link}")
 
         # Deleting the cloned repository
-        subprocess.run(["rm", "-rf", repo_name])
-
+        shutil.rmtree(repo_name, ignore_errors=True)
+    except subprocess.TimeoutExpired:
+        timeout_counter += 1
+        error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
+        error_msg += process.stdout + process.stderr + "\n\n"
+        direct_file_name = dir_path + "/" + repo_name + "Direct.json"
+        indirect_file_name = dir_path + "/" + repo_name + "Transitive.json"
+        if os.path.exists(direct_file_name):
+            try:
+                os.remove(direct_file_name)
+                os.remove(indirect_file_name)
+                logging.info(f"Json at {direct_file_name} has been removed")
+            except OSError as e:
+                print(f"There was an error removing the file: {e}")
+        else:
+            print(f"The file at {direct_file_name} does not exist.")
+        logging.error(error_msg)
+    
+    except subprocess.CalledProcessError:
+        logging.info(f"{repo_name} had an error while running mvn test")
     except Exception as error:
         logging.error(f"Error processing {link}: {error}")
 
