@@ -95,6 +95,11 @@ def process_row(row):
         logging.info(f"Timeout occured while running 'mvn test' in {repo_name}")
     except Exception as error:
         logging.info(f"Error processing {row[0]}: {error}")
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        logging.error(f"Exceotion line number : {lineno}")
+        
     
     log_file.flush()
     shutil.rmtree(repo_name, ignore_errors=True)
