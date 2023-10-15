@@ -88,6 +88,8 @@ def process_row(row):
     except subprocess.TimeoutExpired:
         timeout_counter += 1
         logging.info(f"Timeout occured while running 'mvn test' in {repo_name}")
+    except subprocess.CalledProcessError:
+        logging.info(f"{repo_name} had an error while running mvn test")
     except Exception as error:
         logging.info(f"Error processing {row[0]}: {error}")
         exc_type, exc_obj, tb = sys.exc_info()
