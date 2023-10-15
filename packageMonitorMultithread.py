@@ -80,6 +80,8 @@ def process_row(row):
     except subprocess.TimeoutExpired:
         timeout_counter += 1
         logging.info(f"Timeout occured while running 'mvn test' in {repo_name}")
+    except Exception as error:
+        logging.info(f"Error processing {row[0]}: {error}")
     
     log_file.flush()
     shutil.rmtree(repo_name, ignore_errors=True)
