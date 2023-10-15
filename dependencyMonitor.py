@@ -16,9 +16,10 @@ def process_github_link(link,file):
     global timeout_counter
     try:
         # Cloning each GitHub repository
+        logging.info(f"Cloning into {link}")
         clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
         subprocess.run(["git", "clone", clone_url])
-
+        logging.info(f"Finsished cloning {link}")
         # Extracting the repository name
         repo_name = link.split("/")[-1].split(".")[0]
         path_exists = os.path.exists(repo_name)
@@ -47,8 +48,8 @@ def process_github_link(link,file):
         
     except subprocess.TimeoutExpired:
         timeout_counter += 1
-        error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
-        error_msg += process.stdout + process.stderr + "\n\n"
+        error_msg = f" Timeout error occurred while running 'mvn test' in {repo_name}:\n"
+        #error_msg += process.stdout + process.stderr + "\n\n"
         direct_file_name = dir_path + "/" + repo_name + "Direct.json"
         indirect_file_name = dir_path + "/" + repo_name + "Transitive.json"
         if os.path.exists(direct_file_name):
@@ -62,8 +63,22 @@ def process_github_link(link,file):
             print(f"The file at {direct_file_name} does not exist.")
         logging.error(error_msg)
     
-    except subprocess.CalledProcessError:
-        logging.info(f"{repo_name} had an error while running mvn test")
+    except subprocess.CalledProcessError as e:
+        error_msg = f" Error occurred while running 'mvn test' in {repo_name}:\n"
+        error_msg += f" Return code: {e.returncode}"
+        #error_msg += process.stdout + process.stderr + "\n\n"
+        direct_file_name = dir_path + "/" + repo_name + "Direct.json"
+        indirect_file_name = dir_path + "/" + repo_name + "Transitive.json"
+        if os.path.exists(direct_file_name):
+            try:
+                os.remove(direct_file_name)
+                os.remove(indirect_file_name)
+                logging.info(f"Json at {direct_file_name} has been removed")
+            except OSError as e:
+                print(f"There was an error removing the file: {e}")
+        else:
+            print(f"The file at {direct_file_name} does not exist.")
+        logging.error(error_msg)
     except Exception as error:
         logging.error(f"Error processing {link}: {error}")
         exc_type, exc_obj, tb = sys.exc_info()
@@ -71,6 +86,7 @@ def process_github_link(link,file):
         logging.error(f"Exceotion line number : {lineno}")
     finally:
         shutil.rmtree(repo_name, ignore_errors=True)
+        logging.info(f"{repo_name} has been completed and directory removed")
         
 
 # Process each GitHub link in the directory
