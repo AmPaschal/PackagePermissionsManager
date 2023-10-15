@@ -42,7 +42,7 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true", ">", f"{repo_name}_maven_build.out"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.check_output(f"sudo -E mvn test -Dmaven.test.failure.ignore=true > {repo_name}_maven_build.out", cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
         
         
         success_count+= 1
