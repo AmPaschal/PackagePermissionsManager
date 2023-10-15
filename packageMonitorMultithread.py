@@ -95,7 +95,7 @@ try:
 FROM (
     SELECT DISTINCT repository_url, dependent_packages_count
     FROM packages
-    WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%'
+    WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%' AND repository_url NOT LIKE '%logging-log4j2%'
 ) AS subquery
 ORDER BY dependent_packages_count DESC
 LIMIT 100;"""
@@ -113,13 +113,13 @@ LIMIT 100;"""
         # Cloning each GitHub repository
         
             
-    log_file.write(f"Number of successes: {success_count}\n")
-    log_file.write(f"Number of failures: {failure_count}\n")
+    logging.info(f"Number of successes: {success_count}\n")
+    logging.info(f"Number of failures: {failure_count}\n")
 except (Exception, psycopg2.Error) as error:
-    print(sys.exec_traceback.tb_lineno)
+    #print(sys.exec_traceback.tb_lineno)
     print("Error while connecting to PostgreSQL", error)
-    log_file.write("Exception thrown\n")
-    log_file.write(sys.exec_traceback)
+    logging.error(f"Exception thrown {error}\n")
+    #logging.error(sys.exec_traceback)
 
 finally:
     # Close the connection
