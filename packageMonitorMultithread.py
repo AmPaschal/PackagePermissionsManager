@@ -12,11 +12,13 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 github_api_url = "https://api.github.com/search/repositories"
 output_directory = "/home/robin489/vulnRecreation/dependentPackages"
+github_access_token = ""
 logging.basicConfig(filename='inital_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 failure_count = 0
 success_count = 0
+timeout_counter = 0
 counter_lock = Lock()
 
 def process_row(row):
@@ -25,7 +27,8 @@ def process_row(row):
     global failure_count
     try:
         logging.info(f"Cloning {row}")
-        subprocess.run(["git", "clone", row[0]])
+        clone_url = f"https://{github_access_token}@{row[0].split('//')[1]}"
+        subprocess.run(["git","clone", clone_url])
         logging.info(f"Cloned {row}")
     
         # Extracting the repository name
@@ -73,7 +76,10 @@ def process_row(row):
             "order": "desc",
             "per_page": 10
             }
-            response = requests.get(github_api_url, params=params)
+            headers = {
+            "Authorization": f"token {github_access_token}"
+        }
+            response = requests.get(github_api_url, params=params,headers=headers)
     
             if response.status_code == 200:
                 logging.info("Received response from Github")

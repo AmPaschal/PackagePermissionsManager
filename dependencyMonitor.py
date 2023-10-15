@@ -5,13 +5,15 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 
 # Directory containing the GitHub links
+github_access_token = ""
 github_links_directory = "/home/robin489/vulnRecreation/dependentPackages"
 logging.basicConfig(filename='github_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 # Function to process each GitHub link
 def process_github_link(link,file):
     try:
         # Cloning each GitHub repository
-        subprocess.run(["git", "clone", link])
+        clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
+        subprocess.run(["git", "clone", clone_url])
 
         # Extracting the repository name
         repo_name = link.split("/")[-1].split(".")[0]
