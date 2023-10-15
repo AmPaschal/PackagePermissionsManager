@@ -91,8 +91,10 @@ def process_github_link(link,file):
         lineno = tb.tb_lineno
         logging.error(f"Exceotion line number : {lineno}")
     finally:
-        shutil.rmtree(repo_name, ignore_errors=True)
-        logging.info(f"{repo_name} has been completed and directory removed")
+        if not skip:
+            shutil.rmtree(repo_name, ignore_errors=True)
+            logging.info(f"{repo_name} has been completed and directory removed")
+        logging.info(f"Finsihed {repo_name} but processing was skipped")
         
 
 # Process each GitHub link in the directory
