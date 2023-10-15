@@ -11,7 +11,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 github_api_url = "https://api.github.com/search/repositories"
-output_directory = "/home/robin489/vulnRecreation/dependentPackages"
+output_directory = "/home/robin489/vulnRecreation/dependentPackages2"
 github_access_token = ""
 logging.basicConfig(filename='inital_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 if not os.path.exists(output_directory):
@@ -42,11 +42,14 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
-            
+        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true", ">", "maven_build.out"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        
         
         success_count+= 1
         success_msg = f"Succesfully wrote {repo_name}\n"
+        result = subprocess.run('$(cat maven_build.out | grep "Tests run" | grep -v "Time elapsed" | cut -d , -f 1 | cut -d " " -f 3 | tr "\n" "+") 0', shell=True, capture_output=True, text=True, check=True)
+        output = result.stdout.strip()
+        logging.info(f"Maven test results: {output}")
         logging.info(success_msg)
         package_name = row[0].split("/")[-1].split(".")[0]
         params = {
