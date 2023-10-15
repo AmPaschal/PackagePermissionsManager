@@ -139,7 +139,7 @@ LIMIT 2482;"""
     log_file = open("mvn_test_errors.log", "w")
     rows = list(set(rows))
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor() as executor:
         executor.map(process_row, rows)
         
         # Cloning each GitHub repository
