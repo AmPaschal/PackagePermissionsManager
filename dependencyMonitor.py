@@ -14,13 +14,8 @@ logging.basicConfig(filename='github_link_processing.log', level=logging.INFO, f
 timeout_counter = 0
 def process_github_link(link,file):
     global timeout_counter
+    skip = False
     try:
-        # Cloning each GitHub repository
-        logging.info(f"Cloning into {link}")
-        clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
-        subprocess.run(["git", "clone", clone_url])
-        logging.info(f"Finsished cloning {link}")
-        # Extracting the repository name
         repo_name = link.split("/")[-1].split(".")[0]
         path_exists = os.path.exists(repo_name)
         if not path_exists:
@@ -34,15 +29,26 @@ def process_github_link(link,file):
                 logging.error(f"Failed to create directory at {dir_path}: {e}")
         else:
             logging.info(f"The directory at {dir_path} already exists")
-
-        # Set environment variable MAVEN_OPTS
-        os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + file +"/" + repo_name
-        logging.info(f"File name is {file} and repo name is {repo_name}")
-        # Running the test suite using mvn as root with environment variables preserved
-        process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
-
-        
-        logging.info(f"Successfully processed {link}")
+            logging.info("Skipping rest of processing")
+            skip = True
+        # Cloning each GitHub repository
+        if not skip:
+            logging.info(f"Cloning into {link}")
+            clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
+            subprocess.run(["git", "clone", clone_url])
+            logging.info(f"Finsished cloning {link}")
+            # Extracting the repository name
+            
+            
+    
+            # Set environment variable MAVEN_OPTS
+            os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + file +"/" + repo_name
+            logging.info(f"File name is {file} and repo name is {repo_name}")
+            # Running the test suite using mvn as root with environment variables preserved
+            process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+    
+            
+            logging.info(f"Successfully processed {link}")
 
         # Deleting the cloned repository
         
