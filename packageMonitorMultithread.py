@@ -42,7 +42,7 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.Popen(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen("sudo -E mvn test -Dmaven.test.failure.ignore=true", cwd=repo_name, stderr=subprocess.PIPE, text=True)
         for _ in range(600):
             if process.poll() is not None:
                 break
@@ -139,7 +139,7 @@ LIMIT 2482;"""
     log_file = open("mvn_test_errors.log", "w")
     rows = list(set(rows))
     
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         executor.map(process_row, rows)
         
         # Cloning each GitHub repository
