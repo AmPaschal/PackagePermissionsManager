@@ -54,8 +54,8 @@ def process_row(row):
             
         if process.returncode != 0:
             error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
-            error_msg += process.stderr + "\n\n"
-            error_msg = error_msg[0:1000]
+            #error_msg += process.stderr + "\n\n"
+            #error_msg = error_msg[0:1000]
             outputFilePath = "/home/robin489/vulnRecreation/jsons/" + repo_name + "*"
             failFolder = "/home/robin489/vulnRecreation/jsons/failures"
             #subprocess.run(["mv", outputFilePath, failFolder ])
@@ -124,7 +124,7 @@ FROM (
     WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%' AND repository_url NOT LIKE '%logging-log4j2%'
 ) AS subquery
 ORDER BY dependent_packages_count DESC
-LIMIT 100;"""
+LIMIT 2482;"""
 
     cursor.execute(query)
 
