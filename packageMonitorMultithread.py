@@ -39,7 +39,7 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.Popen(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.Popen(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True)
         for _ in range(600):
             if process.poll() is not None:
                 break
