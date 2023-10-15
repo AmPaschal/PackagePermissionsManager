@@ -2,6 +2,7 @@ import subprocess
 import os
 import json
 import shutil
+import sys
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -37,13 +38,13 @@ def process_github_link(link,file):
         os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + file +"/" + repo_name
         logging.info(f"File name is {file} and repo name is {repo_name}")
         # Running the test suite using mvn as root with environment variables preserved
-        process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
 
         
         logging.info(f"Successfully processed {link}")
 
         # Deleting the cloned repository
-        shutil.rmtree(repo_name, ignore_errors=True)
+        
     except subprocess.TimeoutExpired:
         timeout_counter += 1
         error_msg = f"Error occurred while running 'mvn test' in {repo_name}:\n"
@@ -65,6 +66,12 @@ def process_github_link(link,file):
         logging.info(f"{repo_name} had an error while running mvn test")
     except Exception as error:
         logging.error(f"Error processing {link}: {error}")
+        exc_type, exc_obj, tb = sys.exc_info()
+        lineno = tb.tb_lineno
+        logging.error(f"Exceotion line number : {lineno}")
+    finally:
+        shutil.rmtree(repo_name, ignore_errors=True)
+        
 
 # Process each GitHub link in the directory
 for file in os.listdir(github_links_directory):
