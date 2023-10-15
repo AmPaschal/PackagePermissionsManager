@@ -78,6 +78,7 @@ def process_row(row):
     
     log_file.flush()
     shutil.rmtree(repo_name, ignore_errors=True)
+    subprocess.run(["find", "/tmp/surefire-root", "-mindepth", "1", "-delete"])
 # Establish a connection to the database
 try:
     connection = psycopg2.connect(
