@@ -6,6 +6,7 @@ import requests
 import psutil
 import json
 import time
+import re
 import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -20,7 +21,13 @@ failure_count = 0
 success_count = 0
 timeout_counter = 0
 counter_lock = Lock()
-
+def process_output_string(input_string):
+    tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
+    if tests_run_line:
+        tests_run_count = sum(map(int, tests_run_line))
+        return f"{tests_run_count}"
+    else:
+        return "0"
 def process_row(row):
     global timeout_counter
     global success_count
@@ -42,14 +49,13 @@ def process_row(row):
             
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
-        process = subprocess.check_output(f"sudo -E mvn test -Dmaven.test.failure.ignore=true > {repo_name}_maven_build.out", cwd=repo_name, stderr=subprocess.PIPE, text=True, timeout=600)
+        process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
         
         
         success_count+= 1
         success_msg = f"Succesfully wrote {repo_name}\n"
-        result = subprocess.run('$(cat maven_build.out | grep "Tests run" | grep -v "Time elapsed" | cut -d , -f 1 | cut -d " " -f 3 | tr "\n" "+") 0', shell=True, capture_output=True, text=True, check=True)
-        output = result.stdout.strip()
-        logging.info(f"Maven test results: {output}")
+        output = process_output_string(process)
+        logging.info(f"Number of maven tests: {output}")
         logging.info(success_msg)
         package_name = row[0].split("/")[-1].split(".")[0]
         params = {
