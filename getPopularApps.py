@@ -15,7 +15,7 @@ GITHUB_API_URL = "https://api.github.com/repos/{}/dependent-repositories?per_pag
 GITHUB_CONTENTS_API_URL = "https://api.github.com/repos/{}/contents"
 
 def has_pom_file(repo_url, access_token):
-    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url.split("/")[-1]
+    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
     headers = {"Authorization": f"token {access_token}"}
     url = GITHUB_CONTENTS_API_URL.format(repo_name)
     response = requests.get(url, headers=headers)
@@ -26,7 +26,7 @@ def has_pom_file(repo_url, access_token):
     else:
         return False
 def get_dependent_repositories(repo_url, access_token, min_stars):
-    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url.split("/")[-1]
+    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
 
     headers = {"Authorization": f"token {access_token}"}
     url = GITHUB_API_URL.format(repo_name)
