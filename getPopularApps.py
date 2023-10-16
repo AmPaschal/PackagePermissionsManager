@@ -15,17 +15,21 @@ GITHUB_API_URL = "https://api.github.com/repos/{}/dependent-repositories?per_pag
 GITHUB_CONTENTS_API_URL = "https://api.github.com/repos/{}/contents"
 
 def has_pom_file(repo_url, access_token):
+    print("Checking for pom file")
     repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
     headers = {"Authorization": f"token {access_token}"}
     url = GITHUB_CONTENTS_API_URL.format(repo_name)
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
+        print("Github response received for pom file")
         files = [file['name'] for file in response.json()]
         return 'pom.xml' in files
     else:
+        print("Github did not issue a normal response for dependent repos")
         return False
 def get_dependent_repositories(repo_url, access_token, min_stars):
+    print("Getting dependent repositories")
     repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
 
     headers = {"Authorization": f"token {access_token}"}
@@ -33,11 +37,13 @@ def get_dependent_repositories(repo_url, access_token, min_stars):
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
+        print("Github response received fpr depedent repos")
         repos = response.json()
         filtered_repos = [repo['full_name'] for repo in repos
                           if repo['stargazers_count'] >= min_stars and has_pom_file(repo['full_name'], access_token)]
         return filtered_repos
     else:
+        print("Github did not issue a normal response for dependent repos")
         return None
 try:
     connection = psycopg2.connect(
@@ -65,11 +71,11 @@ LIMIT 2482;"""
 
     # Fetch all the results
     rows = cursor.fetchall()
-    log_file = open("mvn_test_errors.log", "w")
     github_urls = list(set(rows))
     github_access_token = ""
     dependent_repositories_union = []
     min_stars = 1000
+    print("Finished db query")
 
     for url in github_urls:
         dependent_repositories = get_dependent_repositories(url, github_access_token, min_stars)
