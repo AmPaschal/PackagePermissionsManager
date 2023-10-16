@@ -31,7 +31,7 @@ def has_pom_file(repo_url, access_token):
         return False
 def get_dependent_repositories(repo_url, access_token, min_stars):
     print(f"Getting dependent repositories for {repo_url}")
-    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
+    repo_name = repo_url[0].split("/")[-1].split(".")[0]
 
     params = {
     "q": f"\"{repo_name}\" in:dependency",
@@ -49,6 +49,9 @@ def get_dependent_repositories(repo_url, access_token, min_stars):
         result = response.json()
         dependent_packages = [item['html_url'] for item in result["items"] if repo_name not in item['html_url']]
         return dependent_packages
+    else:
+        print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
+        return None
 try:
     connection = psycopg2.connect(
         user="postgres",
