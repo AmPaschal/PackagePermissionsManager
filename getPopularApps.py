@@ -50,10 +50,6 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
         print(f"Remaining requests: {remaining_requests}")
     else:
         print("No remaining requests")
-    if retry_after:
-        print(f"Retry_after: {retry_after}")
-    else:
-        print("No retry after field present")
     if limit_reset:
         print(f"Rate limit reset: {limit_reset}")
     else:
@@ -66,6 +62,17 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
     else:
         print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
         return None
+    if remaining_requests == 1:
+        current_epoch_time = int(time.time())
+        time_difference = limit_reset - current_epoch_time
+        if time_difference > 0:
+            print(f"Waiting for {time_difference} seconds for limit reset")
+            time.sleep(time_difference)
+            print("Time target reached continuing")
+        else:
+            print("Target time has already passed")
+            
+            
 try:
     connection = psycopg2.connect(
         user="postgres",
