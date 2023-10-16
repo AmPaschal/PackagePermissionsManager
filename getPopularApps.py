@@ -29,7 +29,7 @@ def has_pom_file(repo_url, access_token):
         print("Github did not issue a normal response for dependent repos")
         print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
         return False
-def get_dependent_repositories(repo_url, access_token, min_stars):
+def get_dependent_repositories(repo_url, github_access_token, min_stars):
     print(f"Getting dependent repositories for {repo_url}")
     repo_name = repo_url[0].split("/")[-1].split(".")[0]
 
