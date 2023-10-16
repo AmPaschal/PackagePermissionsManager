@@ -27,6 +27,7 @@ def has_pom_file(repo_url, access_token):
         return 'pom.xml' in files
     else:
         print("Github did not issue a normal response for dependent repos")
+        print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
         return False
 def get_dependent_repositories(repo_url, access_token, min_stars):
     print(f"Getting dependent repositories for {repo_url}")
@@ -44,6 +45,7 @@ def get_dependent_repositories(repo_url, access_token, min_stars):
         return filtered_repos
     else:
         print("Github did not issue a normal response for dependent repos")
+        print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
         return None
 try:
     connection = psycopg2.connect(
