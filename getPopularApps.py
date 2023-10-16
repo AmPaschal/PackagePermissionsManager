@@ -11,9 +11,9 @@ import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
-GITHUB_API_URL = "https://api.github.com/repos/{}/dependent-repositories?per_page=10"
+#GITHUB_API_URL = "https://api.github.com/repos/{}/dependent-repositories?per_page=10"
 GITHUB_CONTENTS_API_URL = "https://api.github.com/repos/{}/contents"
-
+github_api_url = "https://api.github.com/search/repositories"
 def has_pom_file(repo_url, access_token):
     print("Checking for pom file")
     repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
@@ -33,20 +33,22 @@ def get_dependent_repositories(repo_url, access_token, min_stars):
     print(f"Getting dependent repositories for {repo_url}")
     repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
 
-    headers = {"Authorization": f"token {access_token}"}
-    url = GITHUB_API_URL.format(repo_name)
-    response = requests.get(url, headers=headers)
+    params = {
+    "q": f"\"{repo_name}\" in:dependency",
+    "sort": "stars",
+    "order": "desc",
+    "per_page": 10
+    }
+    headers = {
+    "Authorization": f"token {github_access_token}"
+}
+    response = requests.get(github_api_url, params=params,headers=headers)
 
     if response.status_code == 200:
-        print("Github response received for depedent repos")
-        repos = response.json()
-        filtered_repos = [repo['full_name'] for repo in repos
-                          if repo['stargazers_count'] >= min_stars and has_pom_file(repo['full_name'], access_token)]
-        return filtered_repos
-    else:
-        print("Github did not issue a normal response for dependent repos")
-        print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
-        return None
+        logging.info("Received response from Github")
+        result = response.json()
+        dependent_packages = [item['html_url'] for item in result["items"] if repo_name not in item['html_url']]
+        return dependent_packages
 try:
     connection = psycopg2.connect(
         user="postgres",
