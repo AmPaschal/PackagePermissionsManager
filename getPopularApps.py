@@ -60,7 +60,7 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
         dependent_packages = [item['html_url'] for item in result["items"] if repo_name not in item['html_url']]
         if int(remaining_requests) == 1:
             current_epoch_time = int(time.time())
-            time_difference = int(limit_reset) - current_epoch_time
+            time_difference = int(limit_reset) - current_epoch_time + 5
             if time_difference > 0:
                 print(f"Waiting for {time_difference} seconds for limit reset")
                 time.sleep(time_difference)
@@ -72,6 +72,14 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
         return dependent_packages
     else:
         print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
+        current_epoch_time = int(time.time())
+        time_difference = int(limit_reset) - current_epoch_time + 5
+        if time_difference > 0:
+            print(f"Waiting for {time_difference} seconds for limit reset")
+            time.sleep(time_difference)
+            print("Time target reached continuing")
+        else:
+            print("Target time has already passed")
         return None
     
             
