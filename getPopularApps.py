@@ -57,7 +57,7 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
     if response.status_code == 200:
         print("Received response from Github")
         result = response.json()
-        dependent_packages = [(item['html_url'], item['stargzers_count']) for item in result["items"] if repo_name not in item['html_url']]
+        dependent_packages = [(item['html_url'], item['stargazers_count']) for item in result["items"] if repo_name not in item['html_url']]
         if int(remaining_requests) == 1:
             current_epoch_time = int(time.time())
             time_difference = int(limit_reset) - current_epoch_time + 5
