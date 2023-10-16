@@ -29,7 +29,7 @@ def has_pom_file(repo_url, access_token):
         print("Github did not issue a normal response for dependent repos")
         return False
 def get_dependent_repositories(repo_url, access_token, min_stars):
-    print("Getting dependent repositories")
+    print(f"Getting dependent repositories for {repo_url}")
     repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
 
     headers = {"Authorization": f"token {access_token}"}
@@ -37,7 +37,7 @@ def get_dependent_repositories(repo_url, access_token, min_stars):
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        print("Github response received fpr depedent repos")
+        print("Github response received for depedent repos")
         repos = response.json()
         filtered_repos = [repo['full_name'] for repo in repos
                           if repo['stargazers_count'] >= min_stars and has_pom_file(repo['full_name'], access_token)]
