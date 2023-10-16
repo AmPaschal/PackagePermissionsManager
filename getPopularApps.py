@@ -44,6 +44,7 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
 }
     response = requests.get(github_api_url, params=params,headers=headers)
     remaining_requests = response.headers.get('X-RateLimit-Remaining')
+    retry_after = response.headers.get('Retry-After')
     if remaining_requests:
         print(f"Remaining requests: {remaining_requests}")
     else:
