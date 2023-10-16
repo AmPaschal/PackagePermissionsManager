@@ -49,6 +49,10 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
         print(f"Remaining requests: {remaining_requests}")
     else:
         print("No remaining requests")
+    if retry_after:
+        print(f"Retry_after: {retry_after}")
+    else:
+        print("No retry after field present")
     if response.status_code == 200:
         print("Received response from Github")
         result = response.json()
