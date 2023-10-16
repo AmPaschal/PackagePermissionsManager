@@ -43,9 +43,13 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
     "Authorization": f"token {github_access_token}"
 }
     response = requests.get(github_api_url, params=params,headers=headers)
-
+    remaining_requests = response.headers.get('X-RateLimit-Remaining')
+    if remaining_requests:
+        print(f"Remaining requests: {remaining_requests}")
+    else:
+        print("No remaining requests")
     if response.status_code == 200:
-        logging.info("Received response from Github")
+        print("Received response from Github")
         result = response.json()
         dependent_packages = [item['html_url'] for item in result["items"] if repo_name not in item['html_url']]
         return dependent_packages
