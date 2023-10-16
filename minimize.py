@@ -43,12 +43,13 @@ def process_json_file(json_file_path, num_common_prefixes):
                     minimized_paths.extend(paths)
 
             app_data['allowedPaths'] = minimized_paths
+    new_file_path = json_file_path.split(".json")[0] + "min.json"
 
     # Save the modified JSON data back to the file
-    with open(json_file_path, 'w') as file:
+    with open(new_file_path, 'w') as file:
         json.dump(data, file, indent=2)
 
-    print(f"Modified JSON data saved to {json_file_path}")
+    print(f"Modified JSON data saved to {new_file_path}")
 
 if len(sys.argv) != 3:
     print("Usage: python script.py directory_path num_common_prefixes")

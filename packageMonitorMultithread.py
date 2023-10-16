@@ -76,11 +76,13 @@ def process_row(row):
             dep_size = len(dependent_packages)
             logging.info(f"Before removal dep_size: {dep_size}")
             
-            
-            file_path = os.path.join(output_directory, f"{repo_name}depends")
-            logging.info(f"Writing dependency information to {repo_name}depends")
-            with open(file_path, 'w') as f:
-                json.dump(dependent_packages, f, indent=4)
+            if dep_size > 0:
+                file_path = os.path.join(output_directory, f"{repo_name}depends")
+                logging.info(f"Writing dependency information to {repo_name}depends")
+                with open(file_path, 'w') as f:
+                    json.dump(dependent_packages, f, indent=4)
+            else:
+                logging.info(f"{repo_name} wasn't listed as a dependency in github")
         else:
             print(f"Failed to retrieve data from GitHub API for {package_name}")
             logging.error(f"Failed to retrieve data from GitHub API for {package_name}")
