@@ -57,7 +57,7 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
     if response.status_code == 200:
         print("Received response from Github")
         result = response.json()
-        dependent_packages = [item['html_url'] for item in result["items"] if repo_name not in item['html_url']]
+        dependent_packages = [(item['html_url'], item['stargzers_count']) for item in result["items"] if repo_name not in item['html_url']]
         if int(remaining_requests) == 1:
             current_epoch_time = int(time.time())
             time_difference = int(limit_reset) - current_epoch_time + 5
@@ -80,7 +80,8 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
             print("Time target reached continuing")
         else:
             print("Target time has already passed")
-        return None
+        
+        return get_dependent_repositories(repo_url, github_access_token, min_stars)
     
             
             
@@ -121,10 +122,12 @@ LIMIT 2482;"""
     
         if dependent_repositories:
             dependent_repositories_union.extend(dependent_repositories[:10])
+    dependent_repositories.sort(key = lambda x: x[1], reverse=True)
     output_file_path = 'resulting_list.txt'
+    
     with open(output_file_path, 'w') as file:
         for repo in dependent_repositories_union:
-            file.write(repo + '\n')
+            file.write(f"{repo[0]}, {repo[1]}\n")
 
     print(f"Result written to {output_file_path}")
 
