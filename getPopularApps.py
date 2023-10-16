@@ -45,6 +45,7 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
     response = requests.get(github_api_url, params=params,headers=headers)
     remaining_requests = response.headers.get('X-RateLimit-Remaining')
     retry_after = response.headers.get('Retry-After')
+    limit_reset = response.headers.get('X-ratelimit-reset')
     if remaining_requests:
         print(f"Remaining requests: {remaining_requests}")
     else:
@@ -53,6 +54,10 @@ def get_dependent_repositories(repo_url, github_access_token, min_stars):
         print(f"Retry_after: {retry_after}")
     else:
         print("No retry after field present")
+    if limit_reset:
+        print(f"Rate limit reset: {limit_reset}")
+    else:
+        print("Rate limit reset not provided")
     if response.status_code == 200:
         print("Received response from Github")
         result = response.json()
