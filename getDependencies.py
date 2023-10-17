@@ -15,7 +15,7 @@ output_file = parent_directory + "/dependency_list.txt"
 access_token = ""
 # Function to count the number of dependencies in pom.xml
 def count_dependencies(pom_path, repo_name):
-    print("Parsing POM file")
+    print("Parsing POM file for {repo_name}")
     tree = ET.parse(pom_path)
     root = tree.getroot()
     dependencies = root.findall(".//{http://maven.apache.org/POM/4.0.0}dependency")
@@ -25,8 +25,12 @@ def count_dependencies(pom_path, repo_name):
         os.makedirs(dependDir)
     with open(dependListFile, "w") as f:
         for dependency in dependencies:
-            artifact_id = dependency.find("{http://maven.apache.org/POM/4.0.0}artifactId").text
-            f.write(f"{artifact_id}\n")
+            try:
+                artifact_id = dependency.find("{http://maven.apache.org/POM/4.0.0}artifactId").text
+                f.write(f"{artifact_id}\n")
+            except Exception as e:
+                print(f"Exception thrown: {e}")
+                print(f"Repo_name was: {repo_name}")
             
     print(f"Found {len(dependencies)} dependencies in {repo_name}")    
     return len(dependencies)
