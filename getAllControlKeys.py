@@ -8,8 +8,8 @@ def get_control_keys(controlFiles):
     for file in controlFiles:
         with open(f"{parent_dir}/{file}", 'r') as f:
             control_data = json.load(f)
-            control_key = set(control_data.keys())
-            control_keys.append(control_key)
+            for key in control_data.keys():
+                control_keys.append(key)
     return control_keys
 
 
