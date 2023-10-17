@@ -27,6 +27,7 @@ def insert_control(input_string):
 # Replace 'your_directory_path' with the path to your directory
 directory_path = sys.argv[1]
 
+
 # Getting all files in the directory
 files_in_directory = os.listdir(directory_path)
 
@@ -34,7 +35,9 @@ files_in_directory = os.listdir(directory_path)
 files_without_control = [file for file in files_in_directory if 'Control' not in file]
 
 for file in files_without_control:
+    print(f"Original filename: {file}")
     controlFile = insert_control(file)
+    print(f"Changed filename: {controlFile}")
     testFile = file
     outputFile = "filtered" + file
     filter_control(controlFile, testFile, outputFile)
