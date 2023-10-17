@@ -21,7 +21,7 @@ def has_pom_file(repo_url, access_token):
 
     # Construct the API URL for the repository contents
     api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/"
-    pom_response = requests.get(api_url + "/contents/pom.xml", headers=headers)
+    pom_response = requests.get(api_url, headers=headers)
     remaining_requests = pom_response.headers.get('X-RateLimit-Remaining')
     limit_reset = pom_response.headers.get('X-ratelimit-reset')
     if remaining_requests:
@@ -44,7 +44,18 @@ def has_pom_file(repo_url, access_token):
             print("Target time has already passed")
     else:
         print("Request limit not reached")
-    return pom_response.status_code == 200
+    if pom_response.status_code == 200:
+        repo_contents = pom_response.json()
+        for content in repo_contents:
+            if 'pom.xml' in content['name']:
+                print("Found pom.xml")
+                return True
+        print("Did not find pom.xml")
+        return False
+    else:
+        print(f"Github return with code {pom_response.status_code}")
+        return False
+        
 
 
 github_access_token = ""
