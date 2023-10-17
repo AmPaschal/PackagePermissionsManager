@@ -12,6 +12,7 @@ clone_directory = parent_directory + "/cloned_repositories"
 # Directory to store the list of dependencies
 output_file = parent_directory + "/dependency_list.txt"
 
+access_token = ""
 # Function to count the number of dependencies in pom.xml
 def count_dependencies(pom_path, repo_name):
     print("Parsing POM file")
@@ -35,7 +36,8 @@ def process_url(url):
 
     if not os.path.exists(repo_path):
         print(f"Starting clone of {url}")
-        git.Git(clone_directory).clone(url)
+        git_url = url.replace("https://", f"https://x-access-token:{access_token}@")
+        git.Repo.clone_from(git_url, repo_path)
         print("Clone finished for {url}")
 
     pom_path = os.path.join(repo_path, "pom.xml")
