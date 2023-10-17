@@ -71,7 +71,7 @@ for file in os.listdir("../fullRunJson"):
         filteredFiles.append(file)
 outputs = []        
 for file in filteredFiles:
-    outputs = parsePermFile(file)
+    outputs.append(parsePermFile(file))
 
 with open("permissionSummary.txt", "w") as f:
     for output in outputs:
