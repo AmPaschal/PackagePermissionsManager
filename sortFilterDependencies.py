@@ -41,11 +41,11 @@ print(f"Minimum number of dependencies: {min_dependencies}")
 print(f"Average number of dependencies: {average_dependencies}")
 print(f"Median number of dependencies: {median_dependencies}")
 
-sampled_urls = random.shuffle(filtered_entries)
+random.shuffle(filtered_entries)
 
 # Writing the sampled URLs to a new file
 with open(sampled_output_file, "w") as f:
-    for url in sampled_urls:
+    for url in filtered_entries:
         f.write("%s\n" % url.split()[0])
 
 print(f"Sampled URLs have been saved to {sampled_output_file}.")
