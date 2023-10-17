@@ -19,8 +19,8 @@ controlFiles = []
 with open(f"{parent_dir}/allControlFiles.txt", 'r') as f:
     controlFiles = [line.strip() for line in f.readlines()]
     
-key_set = get_control_keys(controlFiles)
-
+keys = get_control_keys(controlFiles)
+key_set = list(set(keys))
 with open("controlKeys.txt", "w") as of:
     for key in key_set:
         of.write(f"{key}\n")
