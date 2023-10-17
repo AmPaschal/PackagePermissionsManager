@@ -18,8 +18,8 @@ def parsePermFile(file):
         for key, value in file_data.items():
                 if repo_name == "antlr4":
                     print(f"Obj: {key} : {value}")
-                if 'allowed_paths' in value:
-                    allowed_paths = value['allowed_paths']
+                if 'allowedPaths' in value:
+                    allowed_paths = value['allowedPaths']
                     if len(allowed_paths) > 0:
                         hasFs = 1
                 if 'allowedUrls' in value:
