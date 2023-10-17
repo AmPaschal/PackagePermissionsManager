@@ -14,10 +14,10 @@ def get_control_keys(controlFiles):
 
 def filterControl(control_keys, files):
     for file in files:
-        with open(f"../fullRun/{file}", "r") as orig:
+        with open(f"../fullRunJson/{file}", "r") as orig:
             orig_data = json.load(orig)
         filtered_orig_data = {key: value for key, value in orig_data.items() if key not in control_keys}
-        with open(f"../fullRun/filtered{file}", "w") as filtered:
+        with open(f"../fullRunJson/filtered{file}", "w") as filtered:
             json.dump(filtered_orig_data, filtered, indent=4)
 
 controlFiles = []
