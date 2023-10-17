@@ -145,7 +145,7 @@ try:
                 github_urls = []
                 partial_func = partial(process_github_link,app) 
             with open(dependency_file, 'r') as depFile:
-                dependencies = depFile.read().splitLines()
+                dependencies = depFile.read().splitlines()
                 for dep in dependencies:
                     query = """SELECT repository_url
                             FROM packages
