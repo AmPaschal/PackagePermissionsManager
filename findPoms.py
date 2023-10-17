@@ -15,7 +15,13 @@ def has_pom_file(repo_url, access_token):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    pom_response = requests.get(repo_url + "/contents/pom.xml", headers=headers)
+    repo_parts = repo_url.split('/')
+    owner = repo_parts[-2]
+    repo_name = repo_parts[-1]
+
+    # Construct the API URL for the repository contents
+    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/"
+    pom_response = requests.get(api_url + "/contents/pom.xml", headers=headers)
     remaining_requests = pom_response.headers.get('X-RateLimit-Remaining')
     limit_reset = pom_response.headers.get('X-ratelimit-reset')
     if remaining_requests:
@@ -27,7 +33,7 @@ def has_pom_file(repo_url, access_token):
     else:
         print("Rate limit reset not provided")
     print(f"Github Response code {pom_response.status_code}")
-    if int(remaining_requests) == 1:
+    if  remaining_requests and int(remaining_requests) == 1:
         current_epoch_time = int(time.time())
         time_difference = int(limit_reset) - current_epoch_time + 5
         if time_difference > 0:
@@ -42,6 +48,10 @@ def has_pom_file(repo_url, access_token):
 
 
 github_access_token = ""
+
+print("Testing with junit library (known to have pom")
+print(has_pom_file("https://github.com/junit-team/junit4", github_access_token))
+print("Testing finished")
 with open('repository_urls.txt', 'r') as file:
     repository_urls = file.read().splitlines()
    
