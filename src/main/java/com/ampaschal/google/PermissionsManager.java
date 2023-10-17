@@ -137,7 +137,7 @@ public class PermissionsManager {
         
         if(resourceType == ResourceType.FS) {
             if(resourceOp == ResourceOp.READ) {
-                //curObject.setFsRead(true);
+                curObjectDirect.setFsRead(true);
                 
                 curObjectDirect.addAllowedPath(resourceItem);
                 
@@ -145,7 +145,7 @@ public class PermissionsManager {
             }
             else if(resourceOp == ResourceOp.WRITE) {
 
-                //curObject.setFsWrite(true);
+                curObjectDirect.setFsWrite(true);
                 
                 curObjectDirect.addAllowedPath(resourceItem); 
                 
@@ -154,13 +154,13 @@ public class PermissionsManager {
         }
         else if(resourceType == ResourceType.NET) {
             if(resourceOp == ResourceOp.ACCEPT) {
-                //curObject.setNetAccept(true);
+                curObjectDirect.setNetAccept(true);
                 
                 curObjectDirect.addAllowedUrl(resourceItem);
 
             }
             else if(resourceOp == ResourceOp.CONNECT) {
-                //curObject.setNetConnect(true);
+                curObjectDirect.setNetConnect(true);
                 
                 curObjectDirect.addAllowedUrl(resourceItem);   
                 
@@ -168,7 +168,7 @@ public class PermissionsManager {
 
         }
         else {
-            //curObject.setRuntimeExec(true);
+            curObjectDirect.setRuntimeExec(true);
             curObjectDirect.addAllowedCommand(resourceItem);    
 
         }
@@ -193,7 +193,7 @@ public class PermissionsManager {
         
         if(resourceType == ResourceType.FS) {
             if(resourceOp == ResourceOp.READ) {
-                //curObject.setFsRead(true);
+                curObjectTransitive.setFsRead(true);
                 
                 curObjectTransitive.addAllowedPath(resourceItem);
                 
@@ -201,7 +201,7 @@ public class PermissionsManager {
             }
             else if(resourceOp == ResourceOp.WRITE) {
 
-                //curObject.setFsWrite(true);
+                curObjectTransitive.setFsWrite(true);
                 
                 curObjectTransitive.addAllowedPath(resourceItem); 
                 
@@ -210,13 +210,13 @@ public class PermissionsManager {
         }
         else if(resourceType == ResourceType.NET) {
             if(resourceOp == ResourceOp.ACCEPT) {
-                //curObject.setNetAccept(true);
+                curObjectTransitive.setNetAccept(true);
                 
                 curObjectTransitive.addAllowedUrl(resourceItem);
 
             }
             else if(resourceOp == ResourceOp.CONNECT) {
-                //curObject.setNetConnect(true);
+                curObjectTransitive.setNetConnect(true);
                 
                 curObjectTransitive.addAllowedUrl(resourceItem);   
                 
@@ -224,7 +224,7 @@ public class PermissionsManager {
 
         }
         else {
-            //curObject.setRuntimeExec(true);
+            curObjectTransitive.setRuntimeExec(true);
             curObjectTransitive.addAllowedCommand(resourceItem);    
 
         }
