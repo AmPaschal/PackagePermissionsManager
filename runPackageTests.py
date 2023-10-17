@@ -153,7 +153,9 @@ try:
                             WHERE name like '{dep}' AND repository_url LIKE '%github%' """
                     cursor.execute(query)
                     data = cursor.fetchall()
-                    link = data[0][0]
+                    link = None
+                    if data:
+                        link = data[0][0]
                     if not link:
                         logging.info(f"{dep} has no results in db")
                     else:
