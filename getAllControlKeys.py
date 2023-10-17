@@ -86,9 +86,9 @@ numFS = 0
 numNet = 0
 numExec = 0
 for output in outputs:
-    numFS+= output.split(",")[1]
-    numNet+= output.split(",")[2]
-    numExec+= output.split(",")[3]
+    numFS+= int(output.split(",")[1])
+    numNet+= int(output.split(",")[2])
+    numExec+= int(output.split(",")[3])
 
 print(f"Total files: {len(outputs)}")
 print(f"Num FS Perms: {numFS}")
