@@ -66,11 +66,13 @@ with open("controlKeys.txt", "r") as f:
 
 file_pattern = r".+Direct\.json"
 direct_files = find_files_with_pattern(root_dir, file_pattern)
-
+for file in find_files_with_pattern(root_dir, file_pattern):
+    direct_files.append(f"{root_dir}/{file}")
 target_files = []
 for file in direct_files:
     if file not in control_files:
         target_files.append(file)
+print(f"Target files: {target_files}")
 
 filtered_files = filterControl(control_keys, target_files)
 
