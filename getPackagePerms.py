@@ -53,7 +53,7 @@ def parsePermFile(file):
                         hasExec = 1
     return(f"{repo_name},{hasFs},{hasNet},{hasExec}")
 
-file_pattern = r".+ControlDirect\.json"
+file_pattern = r".*ControlDirect\.json"
 
 control_files = []
 for file in find_files_with_pattern(root_dir, file_pattern):
