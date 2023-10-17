@@ -2,6 +2,7 @@ import os
 import git
 import xml.etree.ElementTree as ET
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 # List of GitHub URLs
 
 parent_directory = "./applicationDependencies"
@@ -28,7 +29,19 @@ def count_dependencies(pom_path, repo_name):
             
     print(f"Found {len(dependencies)} dependencies in {repo_name}")    
     return len(dependencies)
+def process_url(url):
+    repo_name = url.split("/")[-1]
+    repo_path = os.path.join(clone_directory, repo_name)
 
+    if not os.path.exists(repo_path):
+        print(f"Starting clone of {url}")
+        git.Git(clone_directory).clone(url)
+        print("Clone finished for {url}")
+
+    pom_path = os.path.join(repo_path, "pom.xml")
+    if os.path.exists(pom_path):
+        num_dependencies = count_dependencies(pom_path, repo_name)
+        return (f"{url} has {num_dependencies} dependencies.")
 input_file = "valid_repository_urls.txt"
 github_urls = []
 if not os.path.exists(parent_directory):
@@ -41,19 +54,12 @@ dependency_list = []
 if not os.path.exists(clone_directory):
     os.makedirs(clone_directory)
 
-for url in github_urls:
-    repo_name = url.split("/")[-1]
-    repo_path = os.path.join(clone_directory, repo_name)
-
-    if not os.path.exists(repo_path):
-        print(f"Starting clone of {repo_path}")
-        git.Git(clone_directory).clone(url)
-        print("Clone finished")
-
-    pom_path = os.path.join(repo_path, "pom.xml")
-    if os.path.exists(pom_path):
-        num_dependencies = count_dependencies(pom_path, repo_name)
-        dependency_list.append(f"{url} has {num_dependencies} dependencies.")
+with ThreadPoolExecutor as executor:
+    results = executor.map(process_url, github_urls)
+    for result in results:
+        if result:
+            dependency_list.append(result)
+    
 
 # Writing dependencies to a file
 with open(output_file, "w") as f:
