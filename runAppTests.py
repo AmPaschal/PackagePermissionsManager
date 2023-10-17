@@ -100,6 +100,8 @@ def process_github_link(link):
 with open(input_file, 'r') as f:
     application_urls = f.readlines()
     logging.info(f"Using scrambled file lines {start_num} to {end_num}")
+    for url in application_urls:
+        url = url.strip()
     focus_urls = application_urls[start_num:end_num]
     with ThreadPoolExecutor() as executor:
         executor.map(process_github_link, focus_urls)
