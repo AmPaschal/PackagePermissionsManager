@@ -28,9 +28,9 @@ def process_github_link(link):
     global timeout_counter
     global success_counter
     global failure_counter
-    global succesful_runs = []
-    global failed_runs = []
-    global timeout_runs = []
+    global succesful_runs
+    global failed_runs
+    global timeout_runs
     skip = False
     try:
         link = link.strip()
