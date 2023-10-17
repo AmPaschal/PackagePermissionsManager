@@ -15,21 +15,22 @@ def parsePermFile(file):
         file_data = json.load(f)
         if repo_name == "antlr4":
             print(f"File data: {file_data}")
-        for obj in file_data:
-            if repo_name == "antlr4":
-                print(f"Obj: {obj}")
-            if 'allowed_paths' in obj:
-                allowed_paths = obj['allowed_paths']
-                if len(allowed_paths) > 0:
-                    hasFs = 1
-            if 'allowedUrls' in obj:
-                allowed_urls = obj['allowedUrls']
-                if len(allowed_urls) > 0:
-                    hasNet = 1
-            if 'allowedCommands' in obj:
-                allowed_commands = obj['allowedComands']
-                if len(allowed_commands) > 0:
-                    hasExec = 1
+        for pkg in file_data:
+            for obj in pkg:
+                if repo_name == "antlr4":
+                    print(f"Obj: {obj}")
+                if 'allowed_paths' in obj:
+                    allowed_paths = obj['allowed_paths']
+                    if len(allowed_paths) > 0:
+                        hasFs = 1
+                if 'allowedUrls' in obj:
+                    allowed_urls = obj['allowedUrls']
+                    if len(allowed_urls) > 0:
+                        hasNet = 1
+                if 'allowedCommands' in obj:
+                    allowed_commands = obj['allowedComands']
+                    if len(allowed_commands) > 0:
+                        hasExec = 1
     return(f"{repo_name},{hasFs},{hasNet},{hasExec}")
         
 def get_control_keys(controlFiles):
