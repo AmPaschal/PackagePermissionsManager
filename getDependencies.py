@@ -29,7 +29,7 @@ def count_dependencies(pom_path, repo_name):
 input_file = "valid_repository_urls"
 github_urls = []
 if not os.path.exists(parent_directory):
-    os.makedires(parent_directory)
+    os.makedirs(parent_directory)
 if os.path.exists(input_file):
     with open(input_file, "r") as f:
         github_urls = [line.strip() for line in f.readlines()]
