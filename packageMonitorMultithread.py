@@ -20,6 +20,7 @@ if not os.path.exists(output_directory):
 failure_count = 0
 success_count = 0
 timeout_counter = 0
+test_list = []
 counter_lock = Lock()
 def process_output_string(input_string):
     tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
@@ -32,6 +33,7 @@ def process_row(row):
     global timeout_counter
     global success_count
     global failure_count
+    global test_list
     try:
         logging.info(f"Cloning {row}")
         clone_url = f"https://{github_access_token}@{row[0].split('//')[1]}"
@@ -57,6 +59,7 @@ def process_row(row):
         output = process_output_string(process)
         logging.info(f"Number of maven tests: {output}")
         logging.info(success_msg)
+        test_list.append((repo_name, output))
         package_name = row[0].split("/")[-1].split(".")[0]
         params = {
         "q": f"\"{package_name}\" in:dependency",
@@ -122,7 +125,7 @@ try:
 FROM (
     SELECT DISTINCT repository_url, dependent_packages_count
     FROM packages
-    WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%' AND repository_url NOT LIKE '%logging-log4j2%'
+    WHERE ecosystem LIKE 'maven' AND repository_url LIKE '%github%' AND repository_url 
 ) AS subquery
 ORDER BY dependent_packages_count DESC
 LIMIT 2482;"""
@@ -142,6 +145,7 @@ LIMIT 2482;"""
             
     logging.info(f"Number of successes: {success_count}\n")
     logging.info(f"Number of failures: {failure_count}\n")
+    logging.info(f"Test list: {test_list}")
 except (Exception, psycopg2.Error) as error:
     #print(sys.exec_traceback.tb_lineno)
     print("Error while connecting to PostgreSQL", error)
