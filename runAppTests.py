@@ -101,7 +101,7 @@ with open(input_file, 'r') as f:
     application_urls = f.readlines()
     with ThreadPoolExecutor() as executor:
         for url in application_urls[start_num:end_num]:
-            process_github_link(url)
+            process_github_link(url.strip())
             
 logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timouts: {timeout_counter}")
         
