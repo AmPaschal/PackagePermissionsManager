@@ -138,6 +138,7 @@ try:
     with open(input_file, 'r') as inputFile:
         focusApps = inputFile.read().splitlines()
         for app in focusApps:
+            print(f"App: {app}")
             cur_dir = f"{parent_dir}/{app}"
             dependency_file = f"{cur_dir}/{app}dependList.txt"
             if not os.path.exists(f"{cur_dir}/packagePerms"):
