@@ -76,6 +76,7 @@ def process_github_link(app,link):
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
+            logging.info(f"Running control for {repo_name}")
             os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}Control"
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
 
@@ -113,6 +114,14 @@ def process_github_link(app,link):
             control_failure.append(repo_name)
             failure_counter -= 1
             failed_runs.remove(failed_runs[len(failed_runs) - 1])
+            control_path_direct = dir_path + "/ControlDirect.json"
+            control_path_indirect = dir_path + "/ControlTransitive.json"
+            if os.path.exists(control_path_direct):
+                try:
+                    os.remove(control_path_direct)
+                    os.remove(control_path_indirect)
+                except OSError as e:
+                    logging.error(f"There was an error removing the file: {e}")
         if os.path.exists(direct_file_name) and not success_occured:
             try:
                 os.remove(direct_file_name)
