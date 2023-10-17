@@ -11,7 +11,7 @@ def parsePermFile(file):
     repo_name = file.split('filtered')[1].split('Direct')[0]
     with open(f"../fullRunJson/{file}", "r") as f:
         file_data = json.load(f)
-        for pkg in file_data:
+        for obj in file_data:
             if 'allowed_paths' in obj:
                 allowed_paths = obj['allowed_paths']
                 if len(allowed_paths) > 0:
