@@ -15,7 +15,6 @@ logging.basicConfig(filename='dependencyTester.log', level=logging.INFO, format=
 timeout_counter = 0
 success_counter = 0
 failure_counter = 0
-input_file = "./applicationDependencies/shuffledApps.txt"
 start_num = 0
 end_num = 10
 succesful_runs = []
@@ -138,7 +137,7 @@ try:
     with open(input_file, 'r') as inputFile:
         focusApps = inputFile.read().splitlines()
         for app in focusApps:
-            print(f"App: {app}")
+            logging.info(f"Current App: {app}")
             cur_dir = f"{parent_dir}/{app}"
             dependency_file = f"{cur_dir}/{app}dependList.txt"
             if not os.path.exists(f"{cur_dir}/packagePerms"):
