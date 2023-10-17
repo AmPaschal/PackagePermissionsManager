@@ -26,7 +26,7 @@ def count_dependencies(pom_path, repo_name):
         
     return len(dependencies)
 
-input_file = "valid_repository_urls"
+input_file = "valid_repository_urls.txt"
 github_urls = []
 if not os.path.exists(parent_directory):
     os.makedirs(parent_directory)
