@@ -14,21 +14,9 @@ from threading import Lock
 #GITHUB_API_URL = "https://api.github.com/repos/{}/dependent-repositories?per_page=10"
 GITHUB_CONTENTS_API_URL = "https://api.github.com/repos/{}/contents"
 github_api_url = "https://api.github.com/search/repositories"
-def has_pom_file(repo_url, access_token):
-    print("Checking for pom file")
-    repo_name = repo_url[0].split("/")[-2] + "/" + repo_url[0].split("/")[-1]
-    headers = {"Authorization": f"token {access_token}"}
-    url = GITHUB_CONTENTS_API_URL.format(repo_name)
-    response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        print("Github response received for pom file")
-        files = [file['name'] for file in response.json()]
-        return 'pom.xml' in files
-    else:
-        print("Github did not issue a normal response for dependent repos")
-        print(f"Error fetching dependent repositories for url:{repo_url} and repo_name:{repo_name}. Status code: {response.status_code}")
-        return False
+    
+    
 def get_dependent_repositories(repo_url, github_access_token, min_stars):
     print(f"Getting dependent repositories for {repo_url}")
     repo_name = repo_url[0].split("/")[-1].split(".")[0]
