@@ -21,7 +21,9 @@ def count_dependencies(pom_path, repo_name):
     if not os.path.exists(dependDir):
         os.makedirs(dependDir)
     with open(dependListFile, "w") as f:
-        f.write('\n'.join(dependencies))
+        for dependency in dependencies:
+            artifact_id = dependency.find("{http://maven.apache.org/POM/4.0.0}artifactId").text
+            f.write(f"{artifact_id}\n")
             
         
     return len(dependencies)
