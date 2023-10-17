@@ -24,4 +24,18 @@ with open(output_file, "w") as f:
     for entry in filtered_entries:
         f.write("%s\n" % entry)
 
+# Calculating summary statistics
+num_entries = len(entries)
+num_filtered_entries = len(filtered_entries)
+max_dependencies = max(map(get_num_dependencies, entries))
+min_dependencies = min(map(get_num_dependencies, entries))
+average_dependencies = sum(map(get_num_dependencies, entries)) / num_entries if num_entries > 0 else 0
+
+# Printing summary statistics
+print(f"Number of entries: {num_entries}")
+print(f"Number of filtered entries (with at least 10 dependencies): {num_filtered_entries}")
+print(f"Maximum number of dependencies: {max_dependencies}")
+print(f"Minimum number of dependencies: {min_dependencies}")
+print(f"Average number of dependencies: {average_dependencies}")
+
 print(f"Sorted and filtered dependencies have been saved to {output_file}.")
