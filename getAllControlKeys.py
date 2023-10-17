@@ -8,6 +8,7 @@ def parsePermFile(file):
     hasFs = 0
     hasNet = 0
     hasExec = 0
+    print(f"{file}")
     repo_name = file.split('filtered')[1].split('Direct')[0]
     with open(f"../fullRunJson/{file}", "r") as f:
         file_data = json.load(f)
