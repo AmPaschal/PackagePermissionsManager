@@ -10,9 +10,14 @@ def parsePermFile(file):
     hasExec = 0
     print(f"{file}")
     repo_name = file.split('filtered')[1].split('Direct')[0]
+    
     with open(f"../fullRunJson/{file}", "r") as f:
         file_data = json.load(f)
+        if repo_name is "antlr4":
+            print(f"File data: {file_data}")
         for obj in file_data:
+            if repo_name is "antlr4":
+                print(f"Obj: {obj}")
             if 'allowed_paths' in obj:
                 allowed_paths = obj['allowed_paths']
                 if len(allowed_paths) > 0:
