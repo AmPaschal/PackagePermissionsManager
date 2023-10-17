@@ -36,7 +36,7 @@ for file in os.listdir(directory_path):
         files_in_directory.append(file)
 
 # Filtering out files that do not contain 'control' in their names
-files_without_control = [file for file in files_in_directory if 'Control' not in file]
+files_without_control = [file for file in files_in_directory if 'Control' not in file and '.json' in file]
 
 for file in files_without_control:
     print(f"Original filename: {file}")
