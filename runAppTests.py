@@ -99,9 +99,11 @@ def process_github_link(link):
         
 with open(input_file, 'r') as f:
     application_urls = f.readlines()
+    logging.info(f"Using scrambled file lines {start_num} to {end_num}")
+    focus_urls = application_urls[start_num:end_num]
     with ThreadPoolExecutor() as executor:
-        for url in application_urls[start_num:end_num]:
-            process_github_link(url.strip())
+        map(process_github_link, focus_urls)
+        
             
 logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timouts: {timeout_counter}")
         
