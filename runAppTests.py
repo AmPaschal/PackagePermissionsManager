@@ -26,6 +26,7 @@ def process_github_link(link):
     global failure_counter
     skip = False
     try:
+        link = link.strip()
         repo_name = link.split("/")[-1].split(".")[0]
         
         dir_path = f"./applicationDependencies/{repo_name}"
@@ -100,8 +101,6 @@ def process_github_link(link):
 with open(input_file, 'r') as f:
     application_urls = f.readlines()
     logging.info(f"Using scrambled file lines {start_num} to {end_num}")
-    for url in application_urls:
-        url = url.strip()
     focus_urls = application_urls[start_num:end_num]
     with ThreadPoolExecutor() as executor:
         executor.map(process_github_link, focus_urls)
