@@ -53,7 +53,7 @@ def parsePermFile(file):
                         hasExec = 1
     return(f"{repo_name},{hasFs},{hasNet},{hasExec}")
 
-file_pattern = r"/.+ControlDirect\.json"
+file_pattern = r"*/.+ControlDirect\.json"
 
 control_files = []
 for file in find_files_with_pattern(root_dir, file_pattern):
@@ -64,7 +64,7 @@ control_keys = []
 with open("controlKeys.txt", "r") as f:
     control_keys = [line.strip() for line in f.readlines()]
 
-file_pattern = r"/.+Direct\.json"
+file_pattern = r"*/.+Direct\.json"
 direct_files = []
 for file in find_files_with_pattern(root_dir, file_pattern):
     direct_files.append(f"{root_dir}/{file}")
