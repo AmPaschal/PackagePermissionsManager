@@ -147,7 +147,7 @@ try:
             with open(dependency_file, 'r') as depFile:
                 dependencies = depFile.read().splitlines()
                 for dep in dependencies:
-                    query = """SELECT repository_url
+                    query = f"""SELECT repository_url
                             FROM packages
                             WHERE name like {dep} """
                     cursor.execute(query)
