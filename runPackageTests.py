@@ -149,7 +149,7 @@ try:
                 for dep in dependencies:
                     query = f"""SELECT repository_url
                             FROM packages
-                            WHERE name like {dep} """
+                            WHERE name like '{dep}' """
                     cursor.execute(query)
                     link = cursor.fetchall()
                     if not link:
