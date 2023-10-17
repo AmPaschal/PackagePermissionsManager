@@ -36,7 +36,15 @@ def process_github_link(link):
             subprocess.run(["git", "clone", clone_url])
             logging.info(f"Finsished cloning {link}")
             # Extracting the repository name
-            
+            direct_file_name = dir_path + "/Direct.json"
+            indirect_file_name = dir_path + "/Transitive.json"
+            if os.path.exists(direct_file_name):
+                try:
+                    os.remove(direct_file_name)
+                    os.remove(indirect_file_name)
+                    logging.info(f"Json at {direct_file_name} and {indirect_file_name} has been removed")
+                except OSError as e:
+                    logging.error(f"There was an error removing the file: {e}")
             
     
             # Set environment variable MAVEN_OPTS
@@ -96,7 +104,8 @@ def process_github_link(link):
         if not skip:
             shutil.rmtree(repo_name, ignore_errors=True)
             logging.info(f"{repo_name} has been completed and directory removed")
-        logging.info(f"Finsihed {repo_name} but processing was skipped")
+        else:
+            logging.info(f"Finsihed {repo_name} but processing was skipped")
         
 with open(input_file, 'r') as f:
     application_urls = f.readlines()
