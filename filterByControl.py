@@ -18,7 +18,7 @@ def filter_control(controlFile, testFile, outputFile, directory_path):
     # Writing the filtered depend data back to a new JSON file
     with open(f"{directory_path}/{outputFile}", 'w') as filtered_depend_file:
         json.dump(filtered_depend_data, filtered_depend_file, indent=4)
-    print("Took {testFile} filtered by {controlFile} and outputted to {outputFIle}")
+    print(f"Took {testFile} filtered by {controlFile} and outputted to {outputFile}")
 
 
 
@@ -29,7 +29,11 @@ directory_path = sys.argv[1]
 
 
 # Getting all files in the directory
-files_in_directory = os.listdir(directory_path)
+files_in_directory = []
+
+for file in os.listdir(directory_path):
+    if os.isfile(os.path.join(directory_path,file)):
+        files_in_directory.append(file)
 
 # Filtering out files that do not contain 'control' in their names
 files_without_control = [file for file in files_in_directory if 'Control' not in file]
