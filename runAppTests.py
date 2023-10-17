@@ -17,6 +17,7 @@ end_num = 10
 succesful_runs = []
 failed_runs = []
 timeout_runs = []
+control_failure = []
 test_count = []
 def process_output_string(input_string):
     tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
@@ -31,8 +32,10 @@ def process_github_link(link):
     global failure_counter
     global succesful_runs
     global failed_runs
+    global control_failure
     global timeout_runs
     skip = False
+    success_occured = False
     try:
         link = link.strip()
         repo_name = link.split("/")[-1].split(".")[0]
@@ -56,18 +59,20 @@ def process_github_link(link):
             
     
             # Set environment variable MAVEN_OPTS
-            os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
+            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/"
             logging.info(f"Repo name is {repo_name} and directory is {dir_path}")
             # Running the test suite using mvn as root with environment variables preserved
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
     
             success_counter += 1
             succesful_runs.append(repo_name)
+            success_occured = True
             logging.info(f"Successfully processed {link}")
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
-
+            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}/Control"
+            process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
         # Deleting the cloned repository
         
     except subprocess.TimeoutExpired:
@@ -96,7 +101,12 @@ def process_github_link(link):
         indirect_file_name = dir_path + "/Transitive.json"
         failure_counter+= 1
         failed_runs.append(repo_name)
-        if os.path.exists(direct_file_name):
+        if success_occured:
+            logging.error(f"An error occured running the control test for {repo_name}")
+            control_failure.append(repo_name)
+            failure_counter -= 1
+            failed_runs.remove(failed_runs[len(failed_runs) - 1])
+        if os.path.exists(direct_file_name) and not success_occured:
             try:
                 os.remove(direct_file_name)
                 os.remove(indirect_file_name)

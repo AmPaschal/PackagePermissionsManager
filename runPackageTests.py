@@ -21,6 +21,7 @@ succesful_runs = []
 failed_runs = []
 timeout_runs = []
 test_count = []
+control_failure = []
 def process_output_string(input_string):
     tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
     if tests_run_line:
@@ -34,9 +35,11 @@ def process_github_link(app,link):
     global failure_counter
     global succesful_runs
     global failed_runs
+    global control_failure
     global timeout_runs
     global test_count
     skip = False
+    success_occured = False
     try:
         link = link.strip()
         repo_name = link.split("/")[-1].split(".")[0]
@@ -65,13 +68,16 @@ def process_github_link(app,link):
             logging.info(f"Running maven test for {repo_name}")
             # Running the test suite using mvn as root with environment variables preserved
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
-    
+           
             success_counter += 1
+            success_occured = True
             succesful_runs.append(repo_name)
             logging.info(f"Successfully processed {link}")
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
+            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}Control"
+            process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
 
         # Deleting the cloned repository
         
@@ -94,6 +100,7 @@ def process_github_link(app,link):
         logging.error(error_msg)
     
     except subprocess.CalledProcessError as e:
+        
         error_msg = f" Error occurred while running 'mvn test' in {repo_name}:\n"
         error_msg += f" Return code: {e.returncode}"
         #error_msg += process.stdout + process.stderr + "\n\n"
@@ -101,7 +108,12 @@ def process_github_link(app,link):
         indirect_file_name = dir_path + f"/{repo_name}Transitive.json"
         failure_counter+= 1
         failed_runs.append(repo_name)
-        if os.path.exists(direct_file_name):
+        if success_occured:
+            logging.error(f"An error occured running the control test for {repo_name}")
+            control_failure.append(repo_name)
+            failure_counter -= 1
+            failed_runs.remove(failed_runs[len(failed_runs) - 1])
+        if os.path.exists(direct_file_name) and not success_occured:
             try:
                 os.remove(direct_file_name)
                 os.remove(indirect_file_name)
@@ -169,7 +181,7 @@ try:
     logging.info(f"Failed Runs: {failed_runs}")
     logging.info(f"Timeout Runs: {timeout_runs}") 
     logging.info(f"Test Count: {test_count}")    
-
+    logging.info(f"Control Failure: {control_failure}")
                 
                     
 
