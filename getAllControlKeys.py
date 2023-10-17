@@ -27,7 +27,7 @@ def parsePermFile(file):
                     if len(allowed_urls) > 0:
                         hasNet = 1
                 if 'allowedCommands' in value:
-                    allowed_commands = value['allowedComands']
+                    allowed_commands = value['allowedCommands']
                     if len(allowed_commands) > 0:
                         hasExec = 1
     return(f"{repo_name},{hasFs},{hasNet},{hasExec}")
