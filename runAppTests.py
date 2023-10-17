@@ -14,6 +14,9 @@ failure_counter = 0
 input_file = "./applicationDependencies/shuffledApps.txt"
 start_num = 0
 end_num = 10
+succesful_runs = []
+failed_runs = []
+timeout_runs = []
 def process_output_string(input_string):
     tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
     if tests_run_line:
@@ -25,6 +28,9 @@ def process_github_link(link):
     global timeout_counter
     global success_counter
     global failure_counter
+    global succesful_runs = []
+    global failed_runs = []
+    global timeout_runs = []
     skip = False
     try:
         link = link.strip()
@@ -55,6 +61,7 @@ def process_github_link(link):
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
     
             success_counter += 1
+            succesful_runs.append(link)
             logging.info(f"Successfully processed {link}")
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
@@ -63,6 +70,7 @@ def process_github_link(link):
         
     except subprocess.TimeoutExpired:
         timeout_counter += 1
+        timeout_runs.append(link)
         error_msg = f" Timeout error occurred while running 'mvn test' in {repo_name}:\n"
         #error_msg += process.stdout + process.stderr + "\n\n"
         direct_file_name = dir_path + "/Direct.json"
@@ -85,6 +93,7 @@ def process_github_link(link):
         direct_file_name = dir_path + "/Direct.json"
         indirect_file_name = dir_path + "/Transitive.json"
         failure_counter+= 1
+        failed_runs.append[link]
         if os.path.exists(direct_file_name):
             try:
                 os.remove(direct_file_name)
@@ -114,8 +123,9 @@ with open(input_file, 'r') as f:
     focus_urls = application_urls[start_num:end_num]
     with ThreadPoolExecutor() as executor:
         executor.map(process_github_link, focus_urls)
-        
-            
-logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timouts: {timeout_counter}")
-        
+                    
+logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timeouts: {timeout_counter}")
+logging.info(f"Succesful Runs: {succesful_runs}")
+logging.info(f"Failed Runs: {failed_runs}")
+logging.info(f"Timeout Runs: {timeout_runs}")     
 
