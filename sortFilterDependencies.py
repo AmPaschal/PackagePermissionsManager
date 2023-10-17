@@ -46,7 +46,7 @@ sampled_urls = random.sample(filtered_entries, 50)
 # Writing the sampled URLs to a new file
 with open(sampled_output_file, "w") as f:
     for url in sampled_urls:
-        f.write("%s\n" % url)
+        f.write("%s\n" % url.split()[0])
 
 print(f"Sampled URLs have been saved to {sampled_output_file}.")
 
