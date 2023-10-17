@@ -60,7 +60,7 @@ def process_github_link(link):
     
             # Set environment variable MAVEN_OPTS
             
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vuln2/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/"
+            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/"
             logging.info(f"Repo name is {repo_name} and directory is {dir_path}")
             # Running the test suite using mvn as root with environment variables preserved
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
@@ -73,7 +73,7 @@ def process_github_link(link):
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
             logging.info(f"Running control for {repo_name}")
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vuln2/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/Control"
+            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/Control"
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
         # Deleting the cloned repository
         

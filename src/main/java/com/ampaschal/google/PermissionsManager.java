@@ -96,8 +96,8 @@ public class PermissionsManager {
         Gson gson = new Gson();
         String jsonOutDirect = gson.toJson(monitorObjectMapDirect);
         String jsonOutTransitive = gson.toJson(monitorObjectMapTransitive);
-        String directFileName = "/home/robin489/vuln2/PackagePermissionsManager/applicationDependencies/" + repoName  + "Direct.json";
-        String transitiveFileName = "/home/robin489/vuln2/PackagePermissionsManager/applicationDependencies/" + repoName + "Transitive.json";
+        String directFileName = "/home/robin489/vulnRecreation/PackagePermissionsManager/applicationDependencies/" + repoName  + "Direct.json";
+        String transitiveFileName = "/home/robin489/vulnRecreation/PackagePermissionsManager/applicationDependencies/" + repoName + "Transitive.json";
         try {
             try (FileWriter writer = new FileWriter(directFileName)) {
                 writer.write(jsonOutDirect);
