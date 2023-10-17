@@ -7,9 +7,10 @@ def get_control_keys(controlFiles):
     control_keys = []
     for file in controlFiles:
         with open(f"{parent_dir}/{file}", 'r') as f:
-            control_keys.append(json.load(f).keys())
-    control_key_set = set(control_keys)
-    return control_key_set
+            control_data = json.load(f)
+            control_key = set(control_data.keys())
+            control_keys.append(control_key)
+    return control_keys
 
 
 
