@@ -17,7 +17,7 @@ def has_pom_file(repo_url, access_token):
     }
     pom_response = requests.get(repo_url + "/contents/pom.xml", headers=headers)
     remaining_requests = pom_response.headers.get('X-RateLimit-Remaining')
-    limit_reset = pom_response.headersget('X-ratelimit-reset')
+    limit_reset = pom_response.headers.get('X-ratelimit-reset')
     if remaining_requests:
         print(f"Remaining requests: {remaining_requests}")
     else:
