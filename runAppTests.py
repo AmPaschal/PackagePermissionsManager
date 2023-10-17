@@ -4,6 +4,7 @@ import json
 import shutil
 import sys
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor
 github_access_token = ""
 logging.basicConfig(filename='applicationDependency.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
