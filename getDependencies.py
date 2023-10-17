@@ -13,6 +13,7 @@ output_file = parent_directory + "/dependency_list.txt"
 
 # Function to count the number of dependencies in pom.xml
 def count_dependencies(pom_path, repo_name):
+    print("Parsing POM file")
     tree = ET.parse(pom_path)
     root = tree.getroot()
     dependencies = root.findall(".//{http://maven.apache.org/POM/4.0.0}dependency")
@@ -25,7 +26,7 @@ def count_dependencies(pom_path, repo_name):
             artifact_id = dependency.find("{http://maven.apache.org/POM/4.0.0}artifactId").text
             f.write(f"{artifact_id}\n")
             
-        
+    print(f"Found {len(dependencies)} dependencies in {repo_name}")    
     return len(dependencies)
 
 input_file = "valid_repository_urls.txt"
@@ -45,7 +46,9 @@ for url in github_urls:
     repo_path = os.path.join(clone_directory, repo_name)
 
     if not os.path.exists(repo_path):
+        print(f"Starting clone of {repo_path}")
         git.Git(clone_directory).clone(url)
+        print("Clone finished")
 
     pom_path = os.path.join(repo_path, "pom.xml")
     if os.path.exists(pom_path):
