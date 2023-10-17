@@ -47,6 +47,7 @@ def process_url(url):
     pom_path = os.path.join(repo_path, "pom.xml")
     if os.path.exists(pom_path):
         num_dependencies = count_dependencies(pom_path, repo_name)
+        shutil.rmtree(repo_path, ignore_errors=True)
         return (f"{url} has {num_dependencies} dependencies.")
 input_file = "valid_repository_urls.txt"
 github_urls = []
@@ -71,6 +72,6 @@ with ThreadPoolExecutor() as executor:
 with open(output_file, "w") as f:
     for item in dependency_list:
         f.write("%s\n" % item)
-shutil.rmtree(clone_directory, ignore_errors=True)
+
 print(f"List of dependencies has been saved to {output_file}.")
 
