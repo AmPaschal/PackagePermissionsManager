@@ -142,8 +142,9 @@ try:
             dependency_file = f"{cur_dir}/{app}dependList.txt"
             if not os.path.exists(f"{cur_dir}/packagePerms"):
                 os.makedirs(f"{cur_dir}/packagePerms")
-                github_urls = []
-                partial_func = partial(process_github_link,app) 
+                
+            partial_func = partial(process_github_link,app)
+            github_urls = []
             with open(dependency_file, 'r') as depFile:
                 dependencies = depFile.read().splitlines()
                 for dep in dependencies:
