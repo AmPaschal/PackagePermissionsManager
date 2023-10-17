@@ -1,5 +1,5 @@
 import os
-import git
+import gitpython
 import xml.etree.ElementTree as ET
 import shutil
 # List of GitHub URLs
@@ -43,7 +43,7 @@ for url in github_urls:
     repo_path = os.path.join(clone_directory, repo_name)
 
     if not os.path.exists(repo_path):
-        git.Git(clone_directory).clone(url)
+        gitpython.Git(clone_directory).clone(url)
 
     pom_path = os.path.join(repo_path, "pom.xml")
     if os.path.exists(pom_path):
