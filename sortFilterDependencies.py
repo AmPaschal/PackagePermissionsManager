@@ -1,3 +1,4 @@
+import statistics
 # File containing the list of repositories and their dependencies
 input_file = "./applicationDependencies/dependency_list.txt"
 
@@ -29,11 +30,13 @@ num_entries = len(filtered_entries)
 max_dependencies = max(map(get_num_dependencies, filtered_entries))
 min_dependencies = min(map(get_num_dependencies, filtered_entries))
 average_dependencies = sum(map(get_num_dependencies, filtered_entries)) / num_entries if num_entries > 0 else 0
+median_dependencies = statistics.median(map(get_num_dependencies, filtered_entries))
 
 # Printing summary statistics
 print(f"Number of filtered entries: {num_entries}")
 print(f"Maximum number of dependencies: {max_dependencies}")
 print(f"Minimum number of dependencies: {min_dependencies}")
 print(f"Average number of dependencies: {average_dependencies}")
+print(f"Median number of dependencies: {median_dependencies}")
 
 print(f"Sorted and filtered dependencies have been saved to {output_file}.")
