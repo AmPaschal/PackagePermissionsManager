@@ -65,7 +65,7 @@ for repo in goodRepos:
 filterControl(key_set, goodFileNames)
 
 filteredFiles = []
-for file is os.listdir("../fullRunJson"):
+for file in os.listdir("../fullRunJson"):
     if "filtered" in file:
         filteredFiles.append(file)
 outputs = []        
