@@ -150,7 +150,7 @@ try:
                 for dep in dependencies:
                     query = f"""SELECT repository_url
                             FROM packages
-                            WHERE name like '{dep}' """
+                            WHERE name like '{dep}' AND repository_url LIKE '%github%' """
                     cursor.execute(query)
                     data = cursor.fetchall()
                     link = data[0][0]
