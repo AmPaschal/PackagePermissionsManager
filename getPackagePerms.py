@@ -56,6 +56,7 @@ def parsePermFile(file):
 file_pattern = r".+ControlDirect\.json"
 
 control_files = find_files_with_pattern(root_dir, file_pattern)
+print(f"Control files: {control_files}")
 control_keys = []
 with open("controlKeys.txt", "r") as f:
     control_keys = [line.strip() for line in f.readlines()]
