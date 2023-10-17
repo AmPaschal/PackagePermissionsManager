@@ -152,12 +152,13 @@ try:
                             FROM packages
                             WHERE name like '{dep}' """
                     cursor.execute(query)
-                    link = cursor.fetchall()
+                    data = cursor.fetchall()
+                    link = data[0][0]
                     if not link:
                         logging.info(f"{dep} has no results in db")
                     else:
                         logging.info(f"Found {link} from lookup of {dep}")
-                        github_urls.append(link[0][0])
+                        github_urls.append(link)
                 github_urls = list(set(github_urls))
                 with ThreadPoolExecutor() as executor:
                     executor.map(partial_func, github_urls)
