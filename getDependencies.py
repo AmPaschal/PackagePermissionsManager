@@ -27,7 +27,8 @@ def count_dependencies(pom_path, repo_name):
         for dependency in dependencies:
             try:
                 artifact_id = dependency.find("{http://maven.apache.org/POM/4.0.0}artifactId").text
-                f.write(f"{artifact_id}\n")
+                group_id = dependency.find("{http://maven.apache.org/POM/4.0.0}groupId").text
+                f.write(f"{group_id}:{artifact_id}\n")
             except Exception as e:
                 print(f"Exception thrown: {e}")
                 print(f"Repo_name was: {repo_name}")
