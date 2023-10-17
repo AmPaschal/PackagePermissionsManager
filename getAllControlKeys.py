@@ -81,5 +81,18 @@ for file in filteredFiles:
 with open("permissionSummary.txt", "w") as f:
     for output in outputs:
         f.write(f"{output}\n")
+        
+numFS = 0
+numNet = 0
+numExec = 0
+for output in outputs:
+    numFS+= output.split(",")[1]
+    numNet+= output.split(",")[2]
+    numExec+= output.split(",")[3]
+
+print(f"Total files: {len(outputs)}")
+print(f"Num FS Perms: {numFS}")
+print(f"Num Net Perms: {numNet}")
+print(f"Num Exec Perms: {numExec}")
 
 
