@@ -34,7 +34,7 @@ def parsePermFile(file):
     hasExec = 0
     print(f"{file}")
     file_segments = file.split("/")
-    repo_name = file_segments[len(file_segments - 1)].split("filtered")[0]
+    repo_name = file_segments[len(file_segments)-1].split("filtered")[0]
     
     with open(f"{file}", "r") as f:
         file_data = json.load(f)
