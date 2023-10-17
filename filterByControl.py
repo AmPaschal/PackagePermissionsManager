@@ -32,7 +32,7 @@ directory_path = sys.argv[1]
 files_in_directory = []
 
 for file in os.listdir(directory_path):
-    if os.isfile(os.path.join(directory_path,file)):
+    if os.path.isfile(os.path.join(directory_path,file)):
         files_in_directory.append(file)
 
 # Filtering out files that do not contain 'control' in their names
