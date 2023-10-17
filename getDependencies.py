@@ -56,7 +56,7 @@ dependency_list = []
 if not os.path.exists(clone_directory):
     os.makedirs(clone_directory)
 
-with ThreadPoolExecutor as executor:
+with ThreadPoolExecutor() as executor:
     results = executor.map(process_url, github_urls)
     for result in results:
         if result:
