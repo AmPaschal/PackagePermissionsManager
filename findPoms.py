@@ -52,7 +52,7 @@ github_access_token = ""
 print("Testing with junit library (known to have pom")
 print(has_pom_file("https://github.com/junit-team/junit4", github_access_token))
 print("Testing finished")
-with open('repository_urls.txt', 'r') as file:
+with open('filteredResults.txt', 'r') as file:
     repository_urls = file.read().splitlines()
    
 valid_repository_urls = []
