@@ -17,6 +17,7 @@ end_num = 10
 succesful_runs = []
 failed_runs = []
 timeout_runs = []
+test_count = []
 def process_output_string(input_string):
     tests_run_line = re.findall(r'Tests run: (\d+)', input_string)
     if tests_run_line:
@@ -65,6 +66,7 @@ def process_github_link(link):
             logging.info(f"Successfully processed {link}")
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
+            test_count.append((repo_name, output))
 
         # Deleting the cloned repository
         
@@ -127,5 +129,6 @@ with open(input_file, 'r') as f:
 logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timeouts: {timeout_counter}")
 logging.info(f"Succesful Runs: {succesful_runs}")
 logging.info(f"Failed Runs: {failed_runs}")
-logging.info(f"Timeout Runs: {timeout_runs}")     
+logging.info(f"Timeout Runs: {timeout_runs}") 
+logging.info(f"Test Count: {test_count}")    
 
