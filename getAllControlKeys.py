@@ -16,7 +16,8 @@ def parsePermFile(file):
         if repo_name == "antlr4":
             print(f"File data: {file_data}")
         for pkg in file_data:
-            for obj in pkg:
+            objset = file_data[pkg]
+            for obj in objset:
                 if repo_name == "antlr4":
                     print(f"Obj: {obj}")
                 if 'allowed_paths' in obj:
