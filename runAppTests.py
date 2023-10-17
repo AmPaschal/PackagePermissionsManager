@@ -61,7 +61,7 @@ def process_github_link(link):
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
     
             success_counter += 1
-            succesful_runs.append(link)
+            succesful_runs.append(repo_name)
             logging.info(f"Successfully processed {link}")
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
@@ -70,7 +70,7 @@ def process_github_link(link):
         
     except subprocess.TimeoutExpired:
         timeout_counter += 1
-        timeout_runs.append(link)
+        timeout_runs.append(repo_name)
         error_msg = f" Timeout error occurred while running 'mvn test' in {repo_name}:\n"
         #error_msg += process.stdout + process.stderr + "\n\n"
         direct_file_name = dir_path + "/Direct.json"
@@ -93,7 +93,7 @@ def process_github_link(link):
         direct_file_name = dir_path + "/Direct.json"
         indirect_file_name = dir_path + "/Transitive.json"
         failure_counter+= 1
-        failed_runs.append[link]
+        failed_runs.append(repo_name)
         if os.path.exists(direct_file_name):
             try:
                 os.remove(direct_file_name)
