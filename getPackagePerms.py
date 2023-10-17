@@ -70,7 +70,7 @@ for file in find_files_with_pattern(root_dir, file_pattern):
     direct_files.append(f"{root_dir}/{file}")
 target_files = []
 for file in direct_files:
-    if file not in control_files:
+    if file not in control_files and file.split("/")[len(file.split("/"))-1] != "ControlDirect.json":
         target_files.append(file)
 print(f"Target files: {target_files}")
 
