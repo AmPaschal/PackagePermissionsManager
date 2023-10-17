@@ -10,7 +10,7 @@ logging.basicConfig(filename='applicationDependency.log', level=logging.INFO, fo
 timeout_counter = 0
 success_counter = 0
 failure_counter = 0
-input_file = "/home/robin489/vulnRecreation/applicationDependencies/shuffledApps.txt"
+input_file = "./applicationDependencies/shuffledApps.txt"
 start_num = 0
 end_num = 10
 def process_output_string(input_string):
@@ -28,7 +28,7 @@ def process_github_link(link):
     try:
         repo_name = link.split("/")[-1].split(".")[0]
         
-        dir_path = f"/home/robin489/vulnRecreation/applicationDependencies/{repo_name}"
+        dir_path = f"./applicationDependencies/{repo_name}"
         if not skip:
             logging.info(f"Cloning into {link}")
             clone_url = f"https://{github_access_token}@{link.split('//')[1]}"
