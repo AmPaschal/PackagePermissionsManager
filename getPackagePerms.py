@@ -85,11 +85,11 @@ with open("permissionSummary.txt", "a") as f:
         f.write(f"{output}\n")
 
 permSummary = []
-with open("permissionsSummary.txt", "r") as f:
+with open("permissionSummary.txt", "r") as f:
     permSummary = [line.strip() for line in f.readlines()]
 
 permSummary = list(set(permSummary))
-with open("permissionsSummary.txt", "w") as f:
+with open("permissionSummary.txt", "w") as f:
     for summary in permSummary:
         f.write(f"{summary}\n")
         
