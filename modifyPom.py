@@ -1,51 +1,53 @@
 import xml.etree.ElementTree as ET
-import re
 
-
-def modifyPom(repo_name, dir_name):
-    # Parse the pom.xml file
-    tree = ET.parse(f'{dir_name}/pom.xml')
+def add_surefire_plugin_to_pom(pom_file_path, additional_class_path_element, arg_line):
+    # Parse the XML
+    tree = ET.parse(pom_file_path)
     root = tree.getroot()
-    
-    # Define the namespace
-    namespace = {'mvn': 'http://maven.apache.org/POM/4.0.0'}
 
-# Check if the Surefire plugin is already present
-    surefire_plugin_present = False
-    for plugin in root.findall('.//mvn:plugin', namespace):
-        artifact_id = plugin.find('mvn:artifactId', namespace)
-        if artifact_id is not None and artifact_id.text == 'maven-surefire-plugin':
-            surefire_plugin_present = True
-            # Check if the configuration block exists
-            configuration = plugin.find('mvn:configuration', namespace)
-            if configuration is None:
-                configuration = ET.SubElement(plugin, 'configuration')
-            # Add or update additionalClassPathElements and argLine
-            additional_classpath_elements = configuration.find('mvn:additionalClassPathElements', namespace)
-            if additional_classpath_elements is None:
-                additional_classpath_elements = ET.SubElement(configuration, 'additionalClassPathElements')
-            additional_classpath_element = ET.SubElement(additional_classpath_elements, 'additionalClassPathElement')
-            additional_classpath_element.text = '/path/to/your/additional/element'  # Replace with your additional element path
-    
-            arg_line = configuration.find('mvn:argLine', namespace)
-            if arg_line is None:
-                arg_line = ET.SubElement(configuration, 'argLine')
-            arg_line.text = '-yourArgLineHere'  # Replace with your desired argLine
-            break
+    # Check if maven-surefire-plugin already exists
+    surefire_plugin = root.find(".//{http://maven.apache.org/POM/4.0.0}build//{http://maven.apache.org/POM/4.0.0}plugins//{http://maven.apache.org/POM/4.0.0}plugin//{http://maven.apache.org/POM/4.0.0}artifactId/[text()='maven-surefire-plugin']")
 
-    
-    # Write the changes back to the pom.xml file
-    print("Writing file")
-    tree.write(f'{dir_name}/pom.xml', encoding='UTF-8', xml_declaration=True)
-    print("Stripping wierd extra symbols")
-    with open(f'{dir_name}/pom.xml', 'r') as file:
-        file_content = file.read()
+    # If the plugin already exists, modify its configuration
+    if surefire_plugin is not None:
+        configuration = surefire_plugin.find("./../{http://maven.apache.org/POM/4.0.0}configuration")
 
-    # Remove 'ns0:' from the content
-    updated_content = re.sub(r'ns0:', '', file_content)
+        additional_class_path_element_tag = ET.SubElement(configuration, "additionalClassPathElements")
+        additional_class_path_element_tag.text = additional_class_path_element
 
-# Write the updated content back to the file
-    with open(f'{dir_name}/pom.xml', 'w') as file:
-        file.write(updated_content)
-print("File is starting")
-modifyPom("unassigned/test", "./junit4")
+        arg_line_tag = ET.SubElement(configuration, "argLine")
+        arg_line_tag.text = arg_line
+
+    # If the plugin doesn't exist, create a new plugin with the required configuration
+    else:
+        build = root.find("{http://maven.apache.org/POM/4.0.0}build")
+        if build is None:
+            build = ET.SubElement(root, "build")
+
+        plugins = build.find("{http://maven.apache.org/POM/4.0.0}plugins")
+        if plugins is None:
+            plugins = ET.SubElement(build, "plugins")
+
+        plugin = ET.SubElement(plugins, "plugin")
+        ET.SubElement(plugin, "groupId").text = "org.apache.maven.plugins"
+        ET.SubElement(plugin, "artifactId").text = "maven-surefire-plugin"
+        ET.SubElement(plugin, "version").text = "3.0.0"
+
+        configuration = ET.SubElement(plugin, "configuration")
+
+        additional_class_path_element_tag = ET.SubElement(configuration, "additionalClassPathElements")
+        additional_class_path_element_tag.text = additional_class_path_element
+
+        arg_line_tag = ET.SubElement(configuration, "argLine")
+        arg_line_tag.text = arg_line
+
+    # Write back to the pom.xml file
+    tree.write(pom_file_path)
+
+# Example usage
+repo_name = "test"
+pom_file_path = './junit4/pom.xml'
+additional_class_path_element = '/home/robin498/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar'
+arg_line = '-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar'
+
+add_surefire_plugin_to_pom(pom_file_path, additional_class_path_element, arg_line)
