@@ -2,9 +2,9 @@ import xml.etree.ElementTree as ET
 
 
 
-def modifyPom(repo_name):
+def modifyPom(repo_name, dir_name):
     # Parse the pom.xml file
-    tree = ET.parse('pom.xml')
+    tree = ET.parse(f'{dir_name}/pom.xml')
     root = tree.getroot()
     
     # Define the namespace
@@ -34,7 +34,7 @@ def modifyPom(repo_name):
             break
     
     # Write the changes back to the pom.xml file
-    tree.write('pom.xml', encoding='UTF-8', xml_declaration=True)
+    tree.write('{dir_name{/pom.xml', encoding='UTF-8', xml_declaration=True)
 
 
-modifyPom("test")
+modifyPom("unassigned/test", "./junit4")
