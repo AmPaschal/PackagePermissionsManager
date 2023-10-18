@@ -5,6 +5,7 @@ import shutil
 import sys
 import logging
 import re
+import modifyPom
 from concurrent.futures import ThreadPoolExecutor
 github_access_token = ""
 logging.basicConfig(filename='applicationDependency.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -13,7 +14,7 @@ success_counter = 0
 failure_counter = 0
 input_file = "./applicationDependencies/shuffledApps.txt"
 start_num = 0
-end_num = 10
+end_num = 1
 succesful_runs = []
 failed_runs = []
 timeout_runs = []
@@ -60,7 +61,7 @@ def process_github_link(link):
     
             # Set environment variable MAVEN_OPTS
             
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/"
+            modifyPom.modify_pom_xml(f'{dir_path}/pom.xml',f'{dir_path}/pom.xml' , f'{repo_name}/')
             logging.info(f"Repo name is {repo_name} and directory is {dir_path}")
             # Running the test suite using mvn as root with environment variables preserved
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
@@ -72,10 +73,9 @@ def process_github_link(link):
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
-            logging.info(f"Running control for {repo_name}")
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}/Control"
-            process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
-        # Deleting the cloned repository
+            
+           
+        # Deleting the cloned repositoryron["
         
     except subprocess.TimeoutExpired:
         timeout_counter += 1
