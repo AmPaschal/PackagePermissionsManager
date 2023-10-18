@@ -5,6 +5,7 @@ import json
 import shutil
 import sys
 import logging
+import modifyPom
 import re
 from functools import partial
 from concurrent.futures import ThreadPoolExecutor
@@ -61,9 +62,9 @@ def process_github_link(app,link):
                 except OSError as e:
                     logging.error(f"There was an error removing the file: {e}")
             
-    
+            modifyPom.modify_pom_xml(f'{repo_name}/pom.xml', f'{repo_name}/pom.xml', f'{app}/packagePerms/{repo_name}')
             # Set environment variable MAVEN_OPTS
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}"
+            #os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}"
             logging.info(f"Repo name is {repo_name} and directory is {dir_path}")
             logging.info(f"Running maven test for {repo_name}")
             # Running the test suite using mvn as root with environment variables preserved
@@ -76,9 +77,7 @@ def process_github_link(app,link):
             output = process_output_string(process)
             logging.info(f"Number of maven tests: {output}")
             test_count.append((repo_name, output))
-            logging.info(f"Running control for {repo_name}")
-            os.environ["MAVEN_OPTS"] = f"-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{app}/packagePerms/{repo_name}Control"
-            process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.skip=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
+            
 
         # Deleting the cloned repository
         
