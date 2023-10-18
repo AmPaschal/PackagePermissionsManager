@@ -92,7 +92,7 @@ def process_row(row):
             
         # Set environment variable MAVEN_OPTS
         
-        modifyPom(repo_name, repo_name)    
+        modifyPom(f"unassignged/{repo_name}", repo_name)    
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
         process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
