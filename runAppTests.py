@@ -143,8 +143,8 @@ with open(input_file, 'r') as f:
     application_urls = f.readlines()
     logging.info(f"Using scrambled file lines {start_num} to {end_num}")
     focus_urls = application_urls[start_num:end_num]
-    with ThreadPoolExecutor() as executor:
-        executor.map(process_github_link, focus_urls)
+    #with ThreadPoolExecutor() as executor:
+    executor.map(process_github_link, focus_urls)
                     
 logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timeouts: {timeout_counter}")
 logging.info(f"Succesful Runs: {succesful_runs}")
