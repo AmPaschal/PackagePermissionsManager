@@ -61,7 +61,7 @@ def process_github_link(link):
     
             # Set environment variable MAVEN_OPTS
             
-            modifyPom.modify_pom_xml(f'applicationDependencies/{repo_name}/{repo_name}/pom.xml',f'applicationDependencies/{repo_name}/{repo_name}/pom.xml' , f'{repo_name}/')
+            modifyPom.modify_pom_xml(f'{repo_name}/pom.xml',f'{repo_name}/pom.xml' , f'{repo_name}/')
             logging.info(f"Repo name is {repo_name} and directory is {dir_path}")
             # Running the test suite using mvn as root with environment variables preserved
             process = subprocess.check_output(["sudo", "-E", "mvn", "test", "-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
