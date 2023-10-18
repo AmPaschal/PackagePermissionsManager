@@ -32,7 +32,7 @@ def modify_pom_xml(oldFile, newFile, repo_name):
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
                 <configuration>
-                    <additionalClassPathElement>/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar</additionalClassPathElement>
+                    <additionalClasspathElements>/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar</additionalClasspathElements>
                     <argLne>-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}</argLine>                </configuration>
             </plugin>''')
             plugins.append(surefire_plugin)
@@ -44,9 +44,9 @@ def modify_pom_xml(oldFile, newFile, repo_name):
                 configuration = ET.Element('configuration')
                 surefire_plugin.append(configuration)
 
-            additionalClassPathElement = configuration.find('additionalClassPathElement')
+            additionalClassPathElement = configuration.find('additionalClasspathElements')
             if additionalClassPathElement is None:
-                additionalClassPathElement = ET.Element('additionalClassPathElement')
+                additionalClassPathElement = ET.Element('additionalClasspathElements')
                 configuration.append(additionalClassPathElement)
             additionalClassPathElement.text = '/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar'
             additionalClassPathElement.tail = '\n'
