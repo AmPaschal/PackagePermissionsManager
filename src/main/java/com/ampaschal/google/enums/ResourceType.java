@@ -4,6 +4,7 @@ public enum ResourceType {
     FS (0),
     NET(1),
     RUNTIME(2),
+    THREAD(3),
     ;
 
     private final int id;

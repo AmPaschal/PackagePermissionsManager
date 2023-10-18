@@ -26,7 +26,7 @@ public class PermissionsManager {
     public static void mockTest(int resourceType, int resourceOp, String resourceItem) throws SecurityException {
         System.out.println("Substituting permission check " + resourceItem + resourceType + resourceOp);
 
-        throw new SecurityException("Trying things out");
+//        throw new SecurityException("Trying things out");
     }
 
     public static void setup() {
@@ -259,6 +259,12 @@ public class PermissionsManager {
                 return true;
             } else {
                 return permissionObject.isRuntime();
+            }
+        } else if (resourceType == ResourceType.THREAD) {
+            if (resourceOp == ResourceOp.EXECUTE && permissionObject.isThreadStart()) {
+                return true;
+            } else {
+                return permissionObject.isThread();
             }
         }
 

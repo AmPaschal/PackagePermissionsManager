@@ -22,7 +22,7 @@ public class ExecPermissionsAgent {
 
         PermissionsManager.setup();
 
-        Map<String, TransformProps> transformPropsMap = PermissionsAgent.getTransformPropMap(false, false, false, true);
+        Map<String, TransformProps> transformPropsMap = PermissionsAgent.getTransformPropMap(false, false, false, true, false);
 
         inst.addTransformer(new PermissionsTransformer(transformPropsMap, false), true);
 

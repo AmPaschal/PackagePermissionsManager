@@ -44,6 +44,12 @@ public class PermissionObject {
     @JsonProperty("runtime.deniedCommands")
     private List<String> deniedCommands;
 
+    @JsonProperty("thread")
+    private boolean thread;
+
+    @JsonProperty("thread.start")
+    private boolean threadStart;
+
     public boolean isFs() {
         return fs;
     }
@@ -154,5 +160,21 @@ public class PermissionObject {
 
     public void setDeniedCommands(List<String> deniedCommands) {
         this.deniedCommands = deniedCommands;
+    }
+
+    public boolean isThread() {
+        return thread;
+    }
+
+    public void setThread(boolean thread) {
+        this.thread = thread;
+    }
+
+    public boolean isThreadStart() {
+        return threadStart;
+    }
+
+    public void setThreadStart(boolean threadStart) {
+        this.threadStart = threadStart;
     }
 }
