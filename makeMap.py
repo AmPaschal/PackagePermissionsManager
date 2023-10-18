@@ -12,7 +12,7 @@ try:
     cursor = connection.cursor() 
 
     github_urls = []
-    with open(f"./applicationDependencies/{repo_name}/{repo_name}dependsList.txt", 'r') as depFile:
+    with open(f"./applicationDependencies/{repo_name}/{repo_name}dependList.txt", 'r') as depFile:
         dependencies = depFile.read().splitlines()
         for dep in dependencies:
             query = f"""SELECT repository_url
