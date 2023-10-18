@@ -51,5 +51,5 @@ def modifyPom(repo_name, dir_name):
 # Write the updated content back to the file
     with open(f'{dir_name}/pom.xml', 'w') as file:
         file.write(updated_content)
-
+print("File is starting")
 modifyPom("unassigned/test", "./junit4")
