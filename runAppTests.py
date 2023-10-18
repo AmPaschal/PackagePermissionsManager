@@ -14,7 +14,7 @@ success_counter = 0
 failure_counter = 0
 input_file = "./applicationDependencies/shuffledApps.txt"
 start_num = 0
-end_num = 1
+end_num = 5
 succesful_runs = []
 failed_runs = []
 timeout_runs = []
@@ -143,8 +143,10 @@ with open(input_file, 'r') as f:
     application_urls = f.readlines()
     logging.info(f"Using scrambled file lines {start_num} to {end_num}")
     focus_urls = application_urls[start_num:end_num]
+    for url in focus_urls:
+        process_github_link(url)
     #with ThreadPoolExecutor() as executor:
-    executor.map(process_github_link, focus_urls)
+    #executor.map(process_github_link, focus_urls)
                     
 logging.info(f"Successes: {success_counter} Failures: {failure_counter} Timeouts: {timeout_counter}")
 logging.info(f"Succesful Runs: {succesful_runs}")
