@@ -6,11 +6,13 @@ def add_surefire_plugin_to_pom(pom_file_path, additional_class_path_element, arg
     root = tree.getroot()
 
     # Check if maven-surefire-plugin already exists
-    surefire_plugin = root.find(".//{http://maven.apache.org/POM/4.0.0}build//{http://maven.apache.org/POM/4.0.0}plugins//{http://maven.apache.org/POM/4.0.0}plugin//{http://maven.apache.org/POM/4.0.0}artifactId/[text()='maven-surefire-plugin']")
+    ns = {'mvn': 'http://maven.apache.org/POM/4.0.0'}
+    plugins = root.findall('./mvn:build/mvn:plugins/mvn:plugin', ns)
+    surefire_plugin = next((plugin for plugin in plugins if plugin.find("./mvn:artifactId", ns).text == 'maven-surefire-plugin'), None)
 
     # If the plugin already exists, modify its configuration
     if surefire_plugin is not None:
-        configuration = surefire_plugin.find("./../{http://maven.apache.org/POM/4.0.0}configuration")
+        configuration = surefire_plugin.find("./mvn:configuration", ns)
 
         additional_class_path_element_tag = ET.SubElement(configuration, "additionalClassPathElements")
         additional_class_path_element_tag.text = additional_class_path_element
@@ -20,11 +22,11 @@ def add_surefire_plugin_to_pom(pom_file_path, additional_class_path_element, arg
 
     # If the plugin doesn't exist, create a new plugin with the required configuration
     else:
-        build = root.find("{http://maven.apache.org/POM/4.0.0}build")
+        build = root.find("./mvn:build", ns)
         if build is None:
             build = ET.SubElement(root, "build")
 
-        plugins = build.find("{http://maven.apache.org/POM/4.0.0}plugins")
+        plugins = build.find("./mvn:plugins", ns)
         if plugins is None:
             plugins = ET.SubElement(build, "plugins")
 
