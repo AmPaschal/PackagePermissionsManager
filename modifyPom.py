@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-
+import re
 
 
 def modifyPom(repo_name, dir_name):
@@ -35,6 +35,14 @@ def modifyPom(repo_name, dir_name):
     
     # Write the changes back to the pom.xml file
     tree.write(f'{dir_name}/pom.xml', encoding='UTF-8', xml_declaration=True)
+    with open('pom.xml', 'r') as file:
+        file_content = file.read()
 
+    # Remove 'ns0:' from the content
+    updated_content = re.sub(r'ns0:', '', file_content)
+
+# Write the updated content back to the file
+    with open('pom.xml', 'w') as file:
+        file.write(updated_content)
 
 modifyPom("unassigned/test", "./junit4")
