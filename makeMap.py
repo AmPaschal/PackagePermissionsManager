@@ -1,4 +1,5 @@
 import psycopg2
+import xrange
 repo_name = "jhipster-registry"
 try:
     connection = psycopg2.connect(
@@ -30,7 +31,7 @@ try:
                 print(f"Found {link} from lookup of {dep}")
                 github_urls.append(link)
     with open(f"./applicationDependencies/{repo_name}/{repo_name}dependMap.txt", 'w') as f:
-        for x in len(dependencies):
+        for x in xrange(len(dependencies)):
             f.write(f"{dependencies[x]} {github_urls[x]}\n")
                 
 except psycopg2.Error as e:
