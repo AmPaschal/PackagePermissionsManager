@@ -11,10 +11,54 @@ import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
+
+
+import xml.etree.ElementTree as ET
+
+
+
+def modifyPom(repo_name, repo_dir):
+    # Parse the pom.xml file
+    tree = ET.parse(f'{repo_dir}/pom.xml')
+    root = tree.getroot()
+    
+    # Define the namespace
+    namespace = {'mvn': 'http://maven.apache.org/POM/4.0.0'}
+    
+    # Check if the Surefire plugin is already present
+    surefire_plugin_present = False
+    for plugin in root.findall('.//mvn:plugin', namespace):
+        artifact_id = plugin.find('mvn:artifactId', namespace)
+        if artifact_id is not None and artifact_id.text == 'maven-surefire-plugin':
+            surefire_plugin_present = True
+            # Check if the configuration block exists
+            configuration = plugin.find('mvn:configuration', namespace)
+            if configuration is None:
+                configuration = ET.SubElement(plugin, 'configuration')
+            # Add or update additionalClassPathElements and argLine
+            additional_classpath_elements = configuration.find('mvn:additionalClassPathElements', namespace)
+            if additional_classpath_elements is None:
+                additional_classpath_elements = ET.SubElement(configuration, 'additionalClassPathElements')
+            additional_classpath_element = ET.SubElement(additional_classpath_elements, 'additionalClassPathElement')
+            additional_classpath_element.text = '/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar'  # Replace with your additional element path
+    
+            arg_line = configuration.find('mvn:argLine', namespace)
+            if arg_line is None:
+                arg_line = ET.SubElement(configuration, 'argLine')
+            arg_line.text = f'-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}'  # Replace with your desired argLine
+            break
+    
+    # Write the changes back to the pom.xml file
+    tree.write('pom.xml', encoding='UTF-8', xml_declaration=True)
+
+
 github_api_url = "https://api.github.com/search/repositories"
 output_directory = "/home/robin489/vulnRecreation/dependentPackages2"
 github_access_token = ""
 logging.basicConfig(filename='inital_link_processing.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+
+
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 failure_count = 0
@@ -47,8 +91,8 @@ def process_row(row):
             repo_name = row[0].split("/")[-1]
             
         # Set environment variable MAVEN_OPTS
-        os.environ["MAVEN_OPTS"] = "-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10," + repo_name
-            
+        
+        modifyPom(repo_name, repo_name)    
         logging.info(f"Running maven test on {repo_name}")
         # Running the test suite using mvn as root
         process = subprocess.check_output(["sudo", "-E", "mvn","test","-Dmaven.test.failure.ignore=true"], cwd=repo_name, stderr=subprocess.STDOUT, text=True, timeout=600)
