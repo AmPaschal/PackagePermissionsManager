@@ -33,7 +33,7 @@ def modify_pom_xml(oldFile, newFile, repo_name):
                 <version>3.1.2</version>
                 <configuration>
                     <additionalClasspathElements>/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar</additionalClasspathElements>
-                    <argLne>-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}</argLine>                </configuration>
+                    <argLine>-javaagent:/home/robin489/vulnRecreation/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar=m10,{repo_name}</argLine>                </configuration>
             </plugin>''')
             plugins.append(surefire_plugin)
         else:
