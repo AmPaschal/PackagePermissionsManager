@@ -34,7 +34,7 @@ def modifyPom(repo_name, dir_name):
             break
     
     # Write the changes back to the pom.xml file
-    tree.write('{dir_name}/pom.xml', encoding='UTF-8', xml_declaration=True)
+    tree.write(f'{dir_name}/pom.xml', encoding='UTF-8', xml_declaration=True)
 
 
 modifyPom("unassigned/test", "./junit4")
