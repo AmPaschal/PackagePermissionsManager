@@ -26,12 +26,21 @@ public class PermissionsAgent {
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
         System.out.println("Permissions Agent");
+        boolean monitorMode;
+        boolean enforceMode;
+        long duration;
+        String[] args = agentArgs.split(",");
+        monitorMode = args[0].contains("m");
+        enforceMode = args[0].contains("e");
+        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
 
-        PermissionsManager.setup();
-
+        PermissionsManager.setup(monitorMode, enforceMode, duration, args[1]);
+        
         Map<String, TransformProps> transformPropsMap = getTransformPropMap(true, true, true, true, true);
 
         inst.addTransformer(new PermissionsTransformer(transformPropsMap, true), true);
+
+        
 
         try {
             // We retransform these classes because they are already loaded into the JVM

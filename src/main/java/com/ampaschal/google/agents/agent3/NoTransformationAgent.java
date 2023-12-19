@@ -15,10 +15,16 @@ public class NoTransformationAgent {
 
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
-//        System.out.println("No transformation Agent");
-//
-//        PermissionsManager.setup();
+        System.out.println("No transformation Agent");
 
+        boolean monitorMode;
+        boolean enforceMode;
+        long duration;
+        String[] args = agentArgs.split(",");
+        monitorMode = args[0].contains("m");
+        enforceMode = args[0].contains("e");
+        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
+        PermissionsManager.setup(monitorMode, enforceMode, duration, args[1]);
         TestHelper.logTime(ProfileKey.AGENT_EXITING);
 
     }
