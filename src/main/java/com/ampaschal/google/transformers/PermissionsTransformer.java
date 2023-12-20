@@ -19,7 +19,6 @@ public class PermissionsTransformer implements ClassFileTransformer {
 
     Set<String> targetClasses;
     Map<String, TransformProps> classProps;
-    boolean debugBytecode;
 
     public PermissionsTransformer(Map<String, TransformProps> classProps, boolean debug) {
         this.targetClasses = classProps.keySet();
@@ -39,11 +38,7 @@ public class PermissionsTransformer implements ClassFileTransformer {
 
                 byte[] transformedClass = classWriter.toByteArray();
 
-                if (debugBytecode) {
-                    String transformedFile = "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/java/com/ampaschal/google/transformed/" + className.split("/")[2] + ".class";
-
-                    TestHelper.writeToFile(transformedClass, transformedFile);
-                }
+                TestHelper.writeBytecodeToFile(transformedClass, className);
 
                 return transformedClass;
 

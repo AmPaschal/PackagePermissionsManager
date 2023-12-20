@@ -1,7 +1,9 @@
 package com.ampaschal.google;
 
+import com.ampaschal.google.entities.PermissionArgs;
 import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
+import com.ampaschal.google.enums.RuntimeMode;
 import com.ampaschal.google.utils.PackagePermissionResolver;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,10 +22,7 @@ public class PermissionsManager {
     private static PermissionsCallback callback;
     private static PackagePermissionResolver permissionResolver;
 
-//    private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
-    private static boolean monitorMode;
-    private static boolean enforceMode;
-    //private static String permFileOutput;
+    private static RuntimeMode runtimeMode;
     private static long timeLastUpdated, duration;
 
     private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
@@ -41,58 +40,39 @@ public class PermissionsManager {
 //        throw new SecurityException("Trying things out");
     }
 
-    public static void setup(boolean monitor, boolean enforce, long durationInput, String repoName) {
+    public static void setup(PermissionArgs permissionArgs) {
 
-        //String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
-        //permFileOutput = "src/main/java/com/ampaschal/google/permfiles/output.json";
-        setMonitorMode(monitor);
-        setEnforcementMode(enforce);
-        setDuration(durationInput);
-        System.out.println("Monitoring Mode: " + monitor);
-        System.out.println("Enforcement Mode: " + enforce);
+        PermissionsCallback callback = RuntimeMode.MONITOR.equals(permissionArgs.getRuntimeMode()) ? getMonitorModeCallback() : null;
 
-        String permissionsFilePath = "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/" +
-        "java/com/ampaschal/google/permfiles/sample-permissions.json";
-
-        setup(permissionsFilePath, null);
+        setup(permissionArgs, callback);
         
-        timeLastUpdated = System.currentTimeMillis();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() { writeJsonFile(repoName); }
-        });
-
+        if (RuntimeMode.MONITOR.equals(permissionArgs.getRuntimeMode())) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() { writeJsonFile(permissionArgs.getOutputPath()); }
+            });
+        }
+    
     }
 
-    private static PermissionsCallback getDefaultCallback() {
+    private static PermissionsCallback getMonitorModeCallback() {
         return new PermissionsCallback() {
             @Override
             public void onPermissionRequested(LinkedHashSet<String> subjectPaths, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
                 Iterator<String> subjectPathsIterator = subjectPaths.iterator();
                 
-
-//                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
-        
                 String subject = subjectPathsIterator.next();
-                String strippedSubject = stripSubject(subject, 4);
-                System.out.println("[PERMISSION] " + strippedSubject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
-                updateMonitorMapDirect(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
-                updateMonitorMapTransitive(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
+                String packageName = getPackageName(subject);
+                // System.out.println("[PERMISSION] " + packageName + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                updateMonitorMapDirect(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+                updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+
                 for(int i = 1; i < subjectPathSize; i++)
                 {
                     subject = subjectPathsIterator.next();
-                    strippedSubject = stripSubject(subject, 4);
-                    updateMonitorMapTransitive(strippedSubject, subjectPathSize, resourceType, resourceOp, resourceItem);
+                    packageName = getPackageName(subject);
+                    updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
                 }
-
-                 //long timeNow = System.currentTimeMillis();
-
-                 /*if (timeNow - timeLastUpdated > duration) {
-
-                    writeJsonFile();
-
-                 }*/
-
 
             }
 
@@ -103,26 +83,23 @@ public class PermissionsManager {
         };
     }
 
-    private static void writeJsonFile(String repoName) {
+    
+    private static void writeJsonFile(String outputPath) {
 
-
-        System.out.println("FILE WRITE HERE");
         Gson gson = new Gson();
         String jsonOutDirect = gson.toJson(monitorObjectMapDirect);
         String jsonOutTransitive = gson.toJson(monitorObjectMapTransitive);
-        String directFileName = "/home/robin489/vulnRecreation/PackagePermissionsManager/applicationDependencies/" + repoName  + "Direct.json";
-        String transitiveFileName = "/home/robin489/vulnRecreation/PackagePermissionsManager/applicationDependencies/" + repoName + "Transitive.json";
-        try {
-            try (FileWriter writer = new FileWriter(directFileName)) {
-                writer.write(jsonOutDirect);
-            }
+        String directFileName = outputPath  + "direct-dependencies.json";
+        String transitiveFileName = outputPath + "transitive-dependencies.json";
+        
+        try (FileWriter writer = new FileWriter(directFileName)) {
+            writer.write(jsonOutDirect);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            try (FileWriter writer = new FileWriter(transitiveFileName)) {
-                writer.write(jsonOutTransitive);
-            }
+
+        try (FileWriter writer = new FileWriter(transitiveFileName)) {
+            writer.write(jsonOutTransitive);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -196,11 +173,7 @@ public class PermissionsManager {
             {
                 monitorObjectMapTransitive.put(subject, new PermissionObject());
             }
-            
-        
-       
-           
-            
+
         
         PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
         
@@ -244,25 +217,19 @@ public class PermissionsManager {
         }
     }
 
-    public static void setup(String permissionsFile, PermissionsCallback permCallback) {
+    public static void setup(PermissionArgs permissionArgs, PermissionsCallback permCallback) {
         
-        
-        if ((permissionsFile == null || permissionsFile.isEmpty()) && enforceMode) {
-            return;
+        try {
+            if(enforceMode)
+            {
+                parseAndSetPermissionsObject(permissionsFile);
+            }    
+            callback = permCallback != null ? permCallback : getDefaultCallback();
+            
+        } catch (IOException e) {
+            System.out.println("Exception thrown");
+            throw new RuntimeException(e);
         }
-//        Set the permissions object
-        
-            try {
-                if(enforceMode)
-                {
-                    parseAndSetPermissionsObject(permissionsFile);
-                }    
-                callback = permCallback != null ? permCallback : getDefaultCallback();
-                
-            } catch (IOException e) {
-                System.out.println("Exception thrown");
-                throw new RuntimeException(e);
-            }
         
         
     }
@@ -279,17 +246,15 @@ public class PermissionsManager {
             permissionObjectMap.putAll(permMap);
         }
     }
-    private static void setDuration(long durationInput)
-    {
+
+    private static void setDuration(long durationInput) {
         duration = durationInput;
     }
-    private static void setMonitorMode(boolean monitor) {
-        monitorMode = monitor;
 
+    private static void setRuntimeMode(RuntimeMode mode) {
+        runtimeMode = mode;
     }
-    private static void setEnforcementMode(boolean enforce) {
-        enforceMode = enforce;
-    }
+
     private static String getSubjectPath() {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
@@ -347,17 +312,9 @@ public class PermissionsManager {
         
         
         int subjectPathSize = subjectPaths.size();
-        /*while(subjectPathsIterator.hasNext())
-        {
-            System.out.println(subjectPathsIterator.next());
-        }*/
+
         if(monitorMode) {
-        /*System.out.println("Calling callback function");
-        System.out.println("Path Size: " + subjectPathSize);
-        System.out.println("Resource Type: " + resourceType);
-        System.out.println("Resource Op: " + resourceOp);
-        System.out.println("Resource Item: " + resourceItem);*/
-        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem);
+            callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem);
         }
 
 //        Get the list of permission objects from the stack trace
@@ -390,9 +347,7 @@ public class PermissionsManager {
 
     public static String stripSubject(String subject, int numSegments)
     {
-        //System.out.println(subject);
         String[] segments = subject.split("[.]");
-        //System.out.println(Arrays.toString(segments));
         String strippedSubject = segments[0];
         for(int i = 1; i < numSegments && i < segments.length - 1; i++)
         {   
@@ -518,33 +473,9 @@ public class PermissionsManager {
             packageNameBuilder.append(segments[i]).append(".");
         }
         packageNameBuilder.append(segments[numSegments - 1]);
-//        if (segments.length < 4) {
-//            System.out.println("Classname with <4 segments: " + className);
-//
-//            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-//
-//            for (StackTraceElement trace: stackTrace) {
-//                System.out.println(trace.getClassName() + "." + trace.getMethodName());
-//            }
-//        }
 
         return packageNameBuilder.toString();
     }
-
-//    private static String findClosestPackageName(String subjectPath) {
-//        String closestPackageName = null;
-//        int longestMatch = 0;
-//
-//        for (String packageName: permissionObjectMap.keySet()) {
-//            if (subjectPath.startsWith(packageName) && packageName.length() > longestMatch) {
-//                closestPackageName = packageName;
-//                longestMatch = packageName.length();
-//            }
-//        }
-//
-//        return closestPackageName;
-//
-//    }
 
     private static Set<PermissionObject> getPermissions(Set<String> subjectPaths) {
 
