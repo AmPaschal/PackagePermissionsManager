@@ -1,21 +1,25 @@
 package com.ampaschal.google.entities;
 
-import com.ampaschal.google.enums.RuntimeMode;
-
 public class PermissionArgs {
     
-    private RuntimeMode runtimeMode;
+    private boolean enforceModeEnabled;
+    private boolean monitorModeEnabled;
     private String outputPath;
     private String permissionFilePath;
 
-    public PermissionArgs(RuntimeMode runtimeMode, String permissionFilePath, String outputPath) {
-        this.runtimeMode = runtimeMode;
+    public PermissionArgs(String permissionFilePath, String outputPath, boolean enforce, boolean monitor) {
+        this.enforceModeEnabled = enforce;
+        this.monitorModeEnabled = monitor;
         this.permissionFilePath = permissionFilePath;
         this.outputPath = outputPath;
     }
 
-    public RuntimeMode getRuntimeMode() {
-        return runtimeMode;
+    public boolean isEnforceModeEnabled() {
+        return enforceModeEnabled;
+    }
+
+    public boolean isMonitorModeEnabled() {
+        return monitorModeEnabled;
     }
 
     public String getOutputPath() {

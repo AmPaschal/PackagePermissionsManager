@@ -2,9 +2,12 @@ package com.ampaschal.google.agents.agent5;
 
 import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
+import com.ampaschal.google.entities.PermissionArgs;
 import com.ampaschal.google.enums.ProfileKey;
 import com.ampaschal.google.transformers.BytecodeGenerator;
 import com.ampaschal.google.transformers.PermissionsTransformer;
+import com.ampaschal.google.utils.Utils;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.instrument.Instrumentation;
@@ -18,14 +21,10 @@ public class BytecodeGeneratorAgent {
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
         System.out.println("Permissions Agent");
-        boolean monitorMode;
-        boolean enforceMode;
-        long duration;
-        String[] args = agentArgs.split(",");
-        monitorMode = args[0].contains("m");
-        enforceMode = args[0].contains("e");
-        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
-        PermissionsManager.setup(monitorMode, enforceMode, duration, args[1]);
+        
+        PermissionArgs permissionArgs = Utils.processAgentArgs(agentArgs);
+
+        PermissionsManager.setup(permissionArgs);
         
 
         inst.addTransformer(new BytecodeGenerator(), true);

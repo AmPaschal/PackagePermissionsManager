@@ -21,8 +21,6 @@ public class ThreadStartApp {
 
     public static void main(String[] args) {
 
-        PermissionsManager.setup();
-
         performThreadStart();
     }
 

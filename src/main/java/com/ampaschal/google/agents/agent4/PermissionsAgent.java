@@ -1,5 +1,19 @@
 package com.ampaschal.google.agents.agent4;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
+import java.net.Socket;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.objectweb.asm.Opcodes;
+
 import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
 import com.ampaschal.google.entities.PermissionArgs;
@@ -9,19 +23,6 @@ import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
 import com.ampaschal.google.transformers.PermissionsTransformer;
 import com.ampaschal.google.utils.Utils;
-
-import org.objectweb.asm.Opcodes;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
-import java.net.Socket;
-import java.util.*;
-
-import javax.swing.text.Utilities;
 
 public class PermissionsAgent {
 

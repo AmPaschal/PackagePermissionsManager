@@ -1,10 +1,7 @@
 package com.ampaschal.google.apps;
 
-import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
 import com.ampaschal.google.enums.ProfileKey;
-
-import java.lang.instrument.Instrumentation;
 
 public class AllPermissionsApp {
 

@@ -3,9 +3,11 @@ package com.ampaschal.google.agents.agent2;
 import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
 import com.ampaschal.google.agents.agent4.PermissionsAgent;
+import com.ampaschal.google.entities.PermissionArgs;
 import com.ampaschal.google.entities.TransformProps;
 import com.ampaschal.google.enums.ProfileKey;
 import com.ampaschal.google.transformers.PermissionsTransformer;
+import com.ampaschal.google.utils.Utils;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -20,14 +22,9 @@ public class ExecPermissionsAgent {
 
         System.out.println("Exec Permissions Agent");
 
-        boolean monitorMode;
-        boolean enforceMode;
-        long duration;
-        String[] args = agentArgs.split(",");
-        monitorMode = args[0].contains("m");
-        enforceMode = args[0].contains("e");
-        duration = Long.parseLong(agentArgs.replaceAll("-?[^\\d]", ""));
-        PermissionsManager.setup(monitorMode, enforceMode, duration, args[1]);
+        PermissionArgs permissionArgs = Utils.processAgentArgs(agentArgs);
+
+        PermissionsManager.setup(permissionArgs);
 
         Map<String, TransformProps> transformPropsMap = PermissionsAgent.getTransformPropMap(false, false, false, true, false);
 

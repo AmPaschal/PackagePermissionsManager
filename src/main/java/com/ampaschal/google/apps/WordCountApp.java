@@ -14,8 +14,6 @@ public class WordCountApp {
 
         TestHelper.logTime(ProfileKey.MAIN_CALLED);
 
-        PermissionsManager.setup(true, true,1000, "WordCount");
-
         performFileCount();
 
         TestHelper.logTime(ProfileKey.MAIN_EXITING);
