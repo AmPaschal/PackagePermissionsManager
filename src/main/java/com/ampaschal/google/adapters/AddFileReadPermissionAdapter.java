@@ -8,6 +8,16 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 
 public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
 
+
+    /** Parameters
+     * Exception to rethrow (if provided, redirect InvocationTargetException to handle it)
+     * Method descriptor (for method being run)
+     * Classes to be excluded during execution
+     * Resource type and operation (not extendable)
+     * Interface that takes in methodVisitor, methodName and descriptor
+     *
+     * */
+
     String methodDescriptor;
 
     public AddFileReadPermissionAdapter(int access, String desc, MethodVisitor methodVisitor) {
@@ -21,15 +31,17 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         super.visitCode();
 
         MethodVisitor methodVisitor = mv;
+
         Label label0 = new Label();
         Label label1 = new Label();
         Label label2 = new Label();
+
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/IllegalAccessException");
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/reflect/InvocationTargetException");
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/NoSuchMethodException");
         methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/ClassNotFoundException");
 
-
+// Optional, if classes are to be excluded
         Label label3 = new Label();
         methodVisitor.visitLabel(label3);
         methodVisitor.visitLineNumber(12, label3);
@@ -48,7 +60,8 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
 
 
-
+//  Can automatically generate this part based on classes to whitelist
+//        Label6 is the exit label
         Label label5 = new Label();
         methodVisitor.visitLabel(label5);
         methodVisitor.visitLineNumber(16, label5);
@@ -61,21 +74,7 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitLdcInsn("sun.misc.URLClassPath$FileLoader");
         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
         methodVisitor.visitJumpInsn(Opcodes.IFNE, label6);
-
-
-
-        // Label label5 = new Label();
-        // methodVisitor.visitLabel(label5);
-        // methodVisitor.visitLineNumber(15, label5);
-        // methodVisitor.visitVarInsn(Opcodes.ALOAD, lv);
-        // methodVisitor.visitLdcInsn("jdk.internal.loader");
-        // methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        // Label label6 = new Label();
-        // methodVisitor.visitJumpInsn(Opcodes.IFNE, label6);
-
-
-
-
+//        Optional Ends
 
         methodVisitor.visitLabel(label0);
         methodVisitor.visitLineNumber(11, label0);
@@ -115,17 +114,18 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_0);
-        methodVisitor.visitInsn(Opcodes.ICONST_0);
+        methodVisitor.visitInsn(Opcodes.ICONST_0); // Modifiable
         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_1);
-        methodVisitor.visitInsn(Opcodes.ICONST_0);
+        methodVisitor.visitInsn(Opcodes.ICONST_0);  // Modifiable
         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_2);
 
+//        User supplied. Loads the string variable and place at top of stack
         if (methodDescriptor.equals("(Ljava/lang/String;)V")) {
             methodVisitor.visitTypeInsn(Opcodes.NEW, "java/io/File");
             methodVisitor.visitInsn(Opcodes.DUP);
@@ -136,18 +136,19 @@ public class AddFileReadPermissionAdapter extends LocalVariablesSorter {
         }
 
         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/File", "getAbsolutePath", "()Ljava/lang/String;", false);
+
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false);
-
         methodVisitor.visitInsn(Opcodes.POP);
         methodVisitor.visitLabel(label1);
         methodVisitor.visitLineNumber(16, label1);
         methodVisitor.visitJumpInsn(Opcodes.GOTO, label6);
+
         methodVisitor.visitLabel(label2);
         methodVisitor.visitLineNumber(14, label2);
         lv = newLocal(Type.INT_TYPE);
         methodVisitor.visitVarInsn(Opcodes.ASTORE, lv);
-        Label label10 = new Label();
+        Label label10 = new Label();    // Label10 here looks useless. Not the target of a jump
         methodVisitor.visitLabel(label10);
         methodVisitor.visitLineNumber(15, label10);
         methodVisitor.visitTypeInsn(Opcodes.NEW, "java/lang/RuntimeException");

@@ -1,19 +1,31 @@
 package com.ampaschal.google;
 
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.ampaschal.google.entities.PermissionArgs;
 import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import com.ampaschal.google.utils.PackagePermissionResolver;
+import com.google.gson.Gson;
 
 public class PermissionsManager {
 
     private static PermissionsCallback callback;
+    private static PackagePermissionResolver permissionResolver;
 
-    private static Map<String, PermissionObject> permissionObjectMap = new HashMap<>();
+    private static PermissionArgs permissionArgs;
+    private static Map<String, PermissionObject> monitorObjectMapDirect = new HashMap<>();
+    private static Map<String, PermissionObject> monitorObjectMapTransitive = new HashMap<>();
 
     public static void log() {
         System.out.println("Permissions check will be done here");
@@ -23,24 +35,42 @@ public class PermissionsManager {
     public static void mockTest(int resourceType, int resourceOp, String resourceItem) throws SecurityException {
         System.out.println("Substituting permission check " + resourceItem + resourceType + resourceOp);
 
-        throw new SecurityException("Trying things out");
+//        throw new SecurityException("Trying things out");
     }
 
-    public static void setup() {
+    public static void setup(PermissionArgs permissionArgs) {
 
-        String permissionsFilePath = "src/main/java/com/ampaschal/google/permfiles/sample-permissions.json";
+        PermissionsCallback callback = permissionArgs.isMonitorModeEnabled() ? getMonitorModeCallback() : null;
+
+        setup(permissionArgs, callback);
         
-        setup(permissionsFilePath, null);
-
+        if (permissionArgs.isMonitorModeEnabled()) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() { writeJsonFile(permissionArgs.getOutputPath()); }
+            });
+        }
+    
     }
 
-    private static PermissionsCallback getDefaultCallback() {
+    private static PermissionsCallback getMonitorModeCallback() {
         return new PermissionsCallback() {
             @Override
-            public void onPermissionRequested(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+            public void onPermissionRequested(LinkedHashSet<String> subjectPaths, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                 System.out.println("[PERMISSION] " + subject + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                Iterator<String> subjectPathsIterator = subjectPaths.iterator();
+                
+                String subject = subjectPathsIterator.next();
+                String packageName = getPackageName(subject);
+                // System.out.println("[PERMISSION] " + packageName + " " + subjectPathSize + " " + resourceType + " " + resourceOp + " " + resourceItem);
+                updateMonitorMapDirect(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+                updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
 
+                for(int i = 1; i < subjectPathSize; i++)
+                {
+                    subject = subjectPathsIterator.next();
+                    packageName = getPackageName(subject);
+                    updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+                }
 
             }
 
@@ -51,54 +81,186 @@ public class PermissionsManager {
         };
     }
 
-    public static void setup(String permissionsFile, PermissionsCallback permCallback) {
+    
+    private static void writeJsonFile(String outputPath) {
 
-        if (permissionsFile == null || permissionsFile.isEmpty()) {
-            return;
-        }
-//        Set the permissions object
-        try {
-            parseAndSetPermissionsObject(permissionsFile);
-            callback = permCallback != null ? permCallback : getDefaultCallback();
+        Gson gson = new Gson();
+        String jsonOutDirect = gson.toJson(monitorObjectMapDirect);
+        String jsonOutTransitive = gson.toJson(monitorObjectMapTransitive);
+        String directFileName = outputPath  + "direct-dependencies.json";
+        String transitiveFileName = outputPath + "transitive-dependencies.json";
+        
+        try (FileWriter writer = new FileWriter(directFileName)) {
+            writer.write(jsonOutDirect);
         } catch (IOException e) {
-            System.out.println("Exception thrown");
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        }
+
+        try (FileWriter writer = new FileWriter(transitiveFileName)) {
+            writer.write(jsonOutTransitive);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private static void parseAndSetPermissionsObject(String permissionsFilePath) throws IOException {
+        
 
-        File permissionsFile = new File(permissionsFilePath);
+    
 
-        TypeReference<Map<String, PermissionObject>> typeRef = new TypeReference<Map<String, PermissionObject>>() {};
+    private static void updateMonitorMapDirect(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+       
+            
 
-        Map<String, PermissionObject> permMap = new ObjectMapper().readValue(permissionsFile, typeRef);
-
-        if (permMap != null && !permMap.isEmpty()) {
-            permissionObjectMap.putAll(permMap);
-        }
-    }
-
-    private static String getSubjectPath() {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-
-        String currentClass = stackTrace[1].getClassName();
-
-//        Return the first non-java class in the stackstrace
-//        I want to skip the containing class of this method as it clearly can't be the subject
-        for (StackTraceElement element: stackTrace) {
-            String elementClassName = element.getClassName();
-            if (elementClassName.startsWith("java") || elementClassName.startsWith("jdk") || elementClassName.startsWith("sun") || elementClassName.equals(currentClass)) {
-                continue;
+            if(!monitorObjectMapDirect.containsKey(subject))
+            {
+                monitorObjectMapDirect.put(subject, new PermissionObject());
             }
-            return elementClassName;
+            
+        PermissionObject curObjectDirect = monitorObjectMapDirect.get(subject);
+        
+        
+        if(resourceType == ResourceType.FS) {
+            if(resourceOp == ResourceOp.READ) {
+                curObjectDirect.setFsRead(true);
+                
+                curObjectDirect.addAllowedPath(resourceItem);
+                
+                
+            }
+            else if(resourceOp == ResourceOp.WRITE) {
+
+                curObjectDirect.setFsWrite(true);
+                
+                curObjectDirect.addAllowedPath(resourceItem); 
+                
+            }
+
         }
-        return null;
+        else if(resourceType == ResourceType.NET) {
+            if(resourceOp == ResourceOp.ACCEPT) {
+                curObjectDirect.setNetAccept(true);
+                
+                curObjectDirect.addAllowedUrl(resourceItem);
+
+            }
+            else if(resourceOp == ResourceOp.CONNECT) {
+                curObjectDirect.setNetConnect(true);
+                
+                curObjectDirect.addAllowedUrl(resourceItem);   
+                
+            }
+
+        }
+        else {
+            curObjectDirect.setRuntimeExec(true);
+            curObjectDirect.addAllowedCommand(resourceItem);    
+
+        }
     }
 
-    private static Set<String> getSubjectPaths() {
+    private static void updateMonitorMapTransitive(String subject, int subjectPathSize, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+       
+            
+
+            if(!monitorObjectMapTransitive.containsKey(subject))
+            {
+                monitorObjectMapTransitive.put(subject, new PermissionObject());
+            }
+
+        
+        PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
+        
+        
+        if(resourceType == ResourceType.FS) {
+            if(resourceOp == ResourceOp.READ) {
+                curObjectTransitive.setFsRead(true);
+                
+                curObjectTransitive.addAllowedPath(resourceItem);
+                
+                
+            }
+            else if(resourceOp == ResourceOp.WRITE) {
+
+                curObjectTransitive.setFsWrite(true);
+                
+                curObjectTransitive.addAllowedPath(resourceItem); 
+                
+            }
+
+        }
+        else if(resourceType == ResourceType.NET) {
+            if(resourceOp == ResourceOp.ACCEPT) {
+                curObjectTransitive.setNetAccept(true);
+                
+                curObjectTransitive.addAllowedUrl(resourceItem);
+
+            }
+            else if(resourceOp == ResourceOp.CONNECT) {
+                curObjectTransitive.setNetConnect(true);
+                
+                curObjectTransitive.addAllowedUrl(resourceItem);   
+                
+            }
+
+        }
+        else {
+            curObjectTransitive.setRuntimeExec(true);
+            curObjectTransitive.addAllowedCommand(resourceItem);    
+
+        }
+    }
+
+    private static PermissionsCallback getDefaultCallback() {
+        return new PermissionsCallback() {
+
+            @Override
+            public void onPermissionRequested(LinkedHashSet<String> subject, int subjectPathSize,
+                    ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
+            }
+
+            @Override
+            public void onPermissionFailure(Set<String> subjectPaths, ResourceType resourceType, ResourceOp resourceOp,
+                    String resourceItem) {
+            }
+
+            
+        };
+    }
+    
+
+    public static void setup(PermissionArgs permArgs, PermissionsCallback permCallback) {
+
+        permissionArgs = permArgs;
+
+        if (permissionArgs.isEnforceModeEnabled()) {
+
+            String permissionsFile = permissionArgs.getPermissionFilePath();
+
+            if (permissionsFile == null || permissionsFile.isEmpty() || !Files.exists(Paths.get(permissionsFile))) {
+                System.out.println("Permissions File not found");
+                return;
+            }
+
+            //  Set the permissions object
+            try {
+                permissionResolver = new PackagePermissionResolver();
+                permissionResolver.generatePermissionsContext(permissionsFile);
+                
+            } catch (IOException e) {
+                System.out.println("Exception thrown");
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        callback = permCallback != null ? permCallback : getDefaultCallback();
+        
+    }
+
+
+    private static LinkedHashSet<String> getSubjectPaths() {
 //        I used a set to avoid repeated entries. This will reduce the overhead when walking the list
-        Set<String> subjectPaths = new LinkedHashSet<>();
+        LinkedHashSet<String> subjectPaths = new LinkedHashSet<>();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         String currentClass = stackTrace[1].getClassName();
@@ -115,131 +277,61 @@ public class PermissionsManager {
         return subjectPaths;
     }
 
-    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem) {
+    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem) throws IOException, FileNotFoundException  {
 
-//        System.out.println("Checking permissions: " + ResourceType.getResourceType(resourceTypeInt) + " - " + ResourceOp.getResourceOp(resourceOpInt)  + " - " + resourceItem);
+        LinkedHashSet<String> subjectPaths = getSubjectPaths();
+        
+        checkPermission(resourceTypeInt, resourceOpInt, resourceItem, subjectPaths);
+        
+    }
 
-//        I would have first returned true if the permissionsObject is null, but I am assuming instrumentations are done
-//        only if the permissions file is present
+    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem, LinkedHashSet<String> subjectPaths) throws IOException, FileNotFoundException  {
 
-//        System.out.println("Permissions Object size: " + permissionObjectMap.size());
+        ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt);  // Change to string
 
-        ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt);
-
-        ResourceOp resourceOp = ResourceOp.getResourceOp(resourceOpInt);
+        ResourceOp resourceOp = ResourceOp.getResourceOp(resourceOpInt);    // Change to string
 
         if (resourceType == null || resourceOp == null) {
             throw new SecurityException("Invalid Permission Request");
         }
+        
+        int subjectPathSize = subjectPaths.size();
 
-        Set<String> subjectPaths = getSubjectPaths();
+        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem);
 
-        if (subjectPaths.isEmpty()) {
+        if (!permissionArgs.isEnforceModeEnabled()) {
             return;
         }
 
-        int subjectPathSize = subjectPaths.size();
-
-        callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
-
-//        Check the Permissions cache if access is permitted
-//        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
-//
-//        if (cachedPermission != null) {
-//            if (cachedPermission) {
-//                return;
-//            } else {
-//                throw new SecurityException("File read " + resourceItem + " not permitted");
-//            }
-//        }
-
-
 //        Get the list of permission objects from the stack trace
+        
         Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
-
+        
         if (permissionObjects.isEmpty()) {
             return;
         }
 
-        // System.out.println("Permission count: " + permissionObjects.size());
-
-//        We confirm each package in the stacktrace has the necessary permissions
+//      We confirm each package in the stacktrace has the necessary permissions
         for (PermissionObject permissionObject: permissionObjects) {
             boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
 
             if (!permitted) {
                 callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
-                throw new SecurityException("Access to " + resourceItem + " not permitted");
+                if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
+                    throw new IOException("Permission not granted");
+                } else if (ResourceType.FS.equals(resourceType)) {
+                    throw new FileNotFoundException("Permission not granted");
+                }
             }
         }
-
+        
     }
-
-    public static void checkPermissionEval(int resourceTypeInt, int resourceOpInt, String resourceItem, Set<String> mockSubjectPaths) {
-
-//        System.out.println("Checking permissions: " + ResourceType.getResourceType(resourceTypeInt) + " - " + ResourceOp.getResourceOp(resourceOpInt)  + " - " + resourceItem);
-
-//        I would have first returned true if the permissionsObject is null, but I am assuming instrumentations are done
-//        only if the permissions file is present
-
-//        System.out.println("Permissions Object size: " + permissionObjectMap.size());
-
-        ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt);
-
-        ResourceOp resourceOp = ResourceOp.getResourceOp(resourceOpInt);
-
-        if (resourceType == null || resourceOp == null) {
-            throw new SecurityException("Invalid Permission Request");
-        }
-
-        Set<String> subjectPaths = getSubjectPaths();
-
-        subjectPaths = mockSubjectPaths.isEmpty() ? subjectPaths : mockSubjectPaths;
-
-        if (subjectPaths.isEmpty()) {
-            return;
-        }
-
-        int subjectPathSize = subjectPaths.size();
-
-        callback.onPermissionRequested(null, subjectPathSize, resourceType, resourceOp, resourceItem);
-
-//        Check the Permissions cache if access is permitted
-//        Boolean cachedPermission = checkPermissionCache(subjectPaths, resourceType, resourceOp, resourceItem);
-//
-//        if (cachedPermission != null) {
-//            if (cachedPermission) {
-//                return;
-//            } else {
-//                throw new SecurityException("File read " + resourceItem + " not permitted");
-//            }
-//        }
-
-
-//        Get the list of permission objects from the stack trace
-        Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
-
-        if (permissionObjects.isEmpty()) {
-            return;
-        }
-
-//        System.out.println("Permission count: " + permissionObjects.size());
-
-//        We confirm each package in the stacktrace has the necessary permissions
-        for (PermissionObject permissionObject: permissionObjects) {
-            boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
-
-            if (!permitted) {
-                callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
-                throw new SecurityException("Access to " + resourceItem + " not permitted");
-            }
-        }
-
-    }
+    
 
     private static boolean performPermissionCheck(PermissionObject permissionObject, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
 //        Permission checking starts from the lowest granularity
+//        Replace with string matching, eg fs.read. If granted, check fs.read.deny; if denied, check fs.read.allow
         if (resourceType == ResourceType.FS) {
             if (permissionObject.getAllowedPaths().contains(resourceItem)) {
                 return true;
@@ -270,6 +362,12 @@ public class PermissionsManager {
             } else {
                 return permissionObject.isRuntime();
             }
+        } else if (resourceType == ResourceType.THREAD) {
+            if (resourceOp == ResourceOp.EXECUTE && permissionObject.isThreadStart()) {
+                return true;
+            } else {
+                return permissionObject.isThread();
+            }
         }
 
         return true;
@@ -289,32 +387,8 @@ public class PermissionsManager {
             packageNameBuilder.append(segments[i]).append(".");
         }
         packageNameBuilder.append(segments[numSegments - 1]);
-//        if (segments.length < 4) {
-//            System.out.println("Classname with <4 segments: " + className);
-//
-//            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-//
-//            for (StackTraceElement trace: stackTrace) {
-//                System.out.println(trace.getClassName() + "." + trace.getMethodName());
-//            }
-//        }
 
         return packageNameBuilder.toString();
-    }
-
-    private static String findClosestPackageName(String subjectPath) {
-        String closestPackageName = null;
-        int longestMatch = 0;
-
-        for (String packageName: permissionObjectMap.keySet()) {
-            if (subjectPath.startsWith(packageName) && packageName.length() > longestMatch) {
-                closestPackageName = packageName;
-                longestMatch = packageName.length();
-            }
-        }
-
-        return closestPackageName;
-
     }
 
     private static Set<PermissionObject> getPermissions(Set<String> subjectPaths) {
@@ -322,9 +396,9 @@ public class PermissionsManager {
         Set<PermissionObject> permissionObjects = new HashSet<>();
 
         for (String path: subjectPaths) {
-            String packageName = getPackageName(path);
 
-            PermissionObject permObject = permissionObjectMap.get(packageName);
+            PermissionObject permObject = permissionResolver.getPermissionForClassName(path);
+
             if (permObject != null) {
                 permissionObjects.add(permObject);
             }
@@ -333,11 +407,6 @@ public class PermissionsManager {
 
         return permissionObjects;
 
-    }
-
-    private static Boolean checkPermissionCache(Set<String> subjectPaths, ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
-
-        return null;
     }
 
 }

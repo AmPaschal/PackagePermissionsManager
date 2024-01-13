@@ -15,4 +15,10 @@ and `PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar` are present.
 3. Run the `AllPermissionsApp` again, this time using the java agent you just built. You can use the following command
 `java -javaagent:/path/to/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-perm-agent.jar -classpath /path/to/PackagePermissionsManager/target/PackagePermissionsManager-1.0-SNAPSHOT-shaded.jar com.ampaschal.google.apps.AllPermissionsApp`
 4. Verify the app runs successfully again, this time printing lines that start with `[PERMISSION]`
+5. If you wish to run in monitoring mode add `=m[duration]` to the end of the javaagenet jar, this will produce a permissions file every [duration] ms to the standard output
+
+## Using minimize tool
+To use the minimize tool in the root directory run 
+`python3 minimize.py inputJson outputJson minPrefixCommon`
+
 

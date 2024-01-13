@@ -1,0 +1,4 @@
+grant {
+    permission java.security.FilePermission "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/java/com/ampaschal/google/permfiles/jsm-policy.policy", "read";
+
+};

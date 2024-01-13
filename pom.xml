@@ -38,7 +38,13 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.15.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
 
+        
 
     </dependencies>
 
@@ -72,19 +78,19 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>file-perm-agent-jar</id>
+                        <id>exec-perm-agent-jar</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <classifier>file-perm-agent</classifier>
+                            <classifier>exec-perm-agent</classifier>
                             <includes>
                                 <include>com/ampaschal/google/agents/agent2/**</include>
                             </includes>
                             <archive>
                                 <manifestEntries>
                                     <Premain-Class>
-                                        com.ampaschal.google.agents.agent2.FilePermissionsAgent
+                                        com.ampaschal.google.agents.agent2.ExecPermissionsAgent
                                     </Premain-Class>
                                     <Can-Retransform-Classes>
                                         true
@@ -187,6 +193,7 @@
                                     <include>com.fasterxml.jackson.core:jackson-databind:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-annotations:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-core:*</include>
+                                    <include>com.google.code.gson:*</include>
                                     <!-- Add any other dependencies you want to include here -->
                                 </includes>
                             </artifactSet>
@@ -218,6 +225,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
 
 

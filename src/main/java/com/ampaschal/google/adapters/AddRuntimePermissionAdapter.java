@@ -20,14 +20,17 @@ public class AddRuntimePermissionAdapter extends LocalVariablesSorter {
 
         {
             MethodVisitor methodVisitor = mv;
+
             Label label0 = new Label();
             Label label1 = new Label();
             Label label2 = new Label();
             Label label12 = new Label();
+
             methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/IllegalAccessException");
             methodVisitor.visitTryCatchBlock(label0, label1, label12, "java/lang/reflect/InvocationTargetException");
             methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/NoSuchMethodException");
             methodVisitor.visitTryCatchBlock(label0, label1, label2, "java/lang/ClassNotFoundException");
+
             methodVisitor.visitLabel(label0);
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitFieldInsn(Opcodes.GETFIELD, "java/lang/ProcessBuilder", "command", "Ljava/util/List;");
@@ -36,6 +39,8 @@ public class AddRuntimePermissionAdapter extends LocalVariablesSorter {
             methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/String");
             int varLv = newLocal(Type.INT_TYPE);
             methodVisitor.visitVarInsn(Opcodes.ASTORE, varLv);
+
+//            Label8 is useless. Not the subject of any jump
             Label label8 = new Label();
             methodVisitor.visitLabel(label8);
             methodVisitor.visitLineNumber(14, label8);
@@ -75,17 +80,20 @@ public class AddRuntimePermissionAdapter extends LocalVariablesSorter {
             methodVisitor.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
             methodVisitor.visitInsn(Opcodes.DUP);
             methodVisitor.visitInsn(Opcodes.ICONST_0);
-            methodVisitor.visitInsn(Opcodes.ICONST_2);
+            methodVisitor.visitInsn(Opcodes.ICONST_2);  // Modifiable
             methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
             methodVisitor.visitInsn(Opcodes.AASTORE);
             methodVisitor.visitInsn(Opcodes.DUP);
             methodVisitor.visitInsn(Opcodes.ICONST_1);
-            methodVisitor.visitInsn(Opcodes.ICONST_2);
+            methodVisitor.visitInsn(Opcodes.ICONST_2);  // Modifiable
             methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
             methodVisitor.visitInsn(Opcodes.AASTORE);
             methodVisitor.visitInsn(Opcodes.DUP);
             methodVisitor.visitInsn(Opcodes.ICONST_2);
+
+//            User supplied. Loads variable to top of stack
             methodVisitor.visitVarInsn(Opcodes.ALOAD, varLv);
+
             methodVisitor.visitInsn(Opcodes.AASTORE);
             methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false);
             methodVisitor.visitInsn(Opcodes.POP);
@@ -93,9 +101,10 @@ public class AddRuntimePermissionAdapter extends LocalVariablesSorter {
             methodVisitor.visitLineNumber(21, label1);
             Label label6 = new Label();
             methodVisitor.visitJumpInsn(Opcodes.GOTO, label6);
+
             methodVisitor.visitLabel(label2);
             methodVisitor.visitLineNumber(18, label2);
-            Label label7 = new Label();
+            Label label7 = new Label(); // Label7 feels useless. Not the target of any jump
             methodVisitor.visitLabel(label7);
             methodVisitor.visitLineNumber(20, label7);
             methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");

@@ -1,6 +1,6 @@
 {
   "com.ampaschal.google": {
-    "fs": false,
+    "fs": false, 
     "fs.read": true,
     "fs.write": true,
     "fs.allowedPaths": ["/usr/local/google/home/pamusuo/Research/ByteBuddyTutorial/ByteBuddyTutorial/./src/main/java/com/ampaschal/bytebuddy/filepractice/test.txt"],
@@ -10,7 +10,7 @@
     "net.accept": false,
     "net.allowedUrls": [],
     "net.deniedUrls": [],
-    "runtime": true,
+    "runtime": false,
     "runtime.exec": true,
     "runtime.allowedCommands": [],
     "runtime.deniedCommands": []

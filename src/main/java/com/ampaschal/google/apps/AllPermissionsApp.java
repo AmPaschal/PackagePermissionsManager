@@ -1,6 +1,5 @@
 package com.ampaschal.google.apps;
 
-import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
 import com.ampaschal.google.enums.ProfileKey;
 
@@ -19,3 +18,5 @@ public class AllPermissionsApp {
         TestHelper.logTime(ProfileKey.MAIN_EXITING);
     }
 }
+
+

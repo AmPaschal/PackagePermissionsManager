@@ -11,6 +11,10 @@ public enum ResourceOp {
 
     private int id;
 
+    public int getId() {
+        return id;
+    }
+
     ResourceOp(int id) {
         this.id = id;
     }
