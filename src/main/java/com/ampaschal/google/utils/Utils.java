@@ -37,7 +37,7 @@ public class Utils {
                             monitor = true;
                         }
                     } else if ("outputPath".equals(argName)) {
-                        outputPath = argName;
+                        outputPath = argValue;
                     } else if ("permFilePath".equals(argName)) {
                         permissionFilePath = argValue;
                     }
@@ -67,14 +67,15 @@ public class Utils {
                         outputPath += "/";
                     }
                 } else {
+                    System.out.println("Output path:" + outputDir.toAbsolutePath());
                     // Handle the case when outputPath is not a valid directory
                     throw new IllegalArgumentException("Output path is not a valid directory");
                 }
             }
-        }
 
-        if (!outputPath.endsWith("/")) {
-            outputPath += "/";
+            if (!outputPath.endsWith("/")) {
+                outputPath += "/";
+            }
         }
 
         PermissionArgs agentArgs = new PermissionArgs(permissionFilePath, outputPath, enforce, monitor);

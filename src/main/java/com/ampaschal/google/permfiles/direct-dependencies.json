@@ -1,0 +1,55 @@
+{
+    "com.ampaschal.google": {
+        "fs": false,
+        "fs.read": false,
+        "fs.write": true,
+        "fs.allowedPaths": [
+            "/dev/random",
+            "/usr/lib/jvm/java-11-openjdk-amd64/lib/security/blocked.certs",
+            "/dev/urandom",
+            "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/java/com/ampaschal/google/output.txt",
+            "/usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security",
+            "/etc/java-11-openjdk/net.properties",
+            "/usr/lib/jvm/java-11-openjdk-amd64/lib/security/cacerts"
+        ],
+        "fs.deniedPaths": [],
+        "net": false,
+        "net.connect": true,
+        "net.accept": false,
+        "net.allowedUrls": [
+            "localhost",
+            "api.sampleapis.com"
+        ],
+        "net.deniedUrls": [],
+        "runtime": false,
+        "runtime.exec": true,
+        "runtime.allowedCommands": [
+            "",
+            "ls"
+        ],
+        "runtime.deniedCommands": [],
+        "thread": false,
+        "thread.start": false
+    },
+    "com.fasterxml.jackson": {
+        "fs": false,
+        "fs.read": true,
+        "fs.write": true,
+        "fs.allowedPaths": [
+            "/home/pamusuo/research/permissions-manager/PackagePermissionsManager/src/main/java/com/ampaschal/google/permfiles/direct-dependencies.json",
+            "/usr/lib/jvm/java-11-openjdk-amd64/lib/tzdb.dat"
+        ],
+        "fs.deniedPaths": [],
+        "net": false,
+        "net.connect": false,
+        "net.accept": false,
+        "net.allowedUrls": [],
+        "net.deniedUrls": [],
+        "runtime": false,
+        "runtime.exec": false,
+        "runtime.allowedCommands": [],
+        "runtime.deniedCommands": [],
+        "thread": false,
+        "thread.start": false
+    }
+}
