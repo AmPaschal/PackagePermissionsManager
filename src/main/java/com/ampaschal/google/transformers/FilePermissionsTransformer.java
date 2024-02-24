@@ -1,14 +1,11 @@
 package com.ampaschal.google.transformers;
 
-import com.ampaschal.google.PermissionClassVisitor;
-import com.ampaschal.google.TestHelper;
-import com.ampaschal.google.enums.ProfileKey;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+
+import com.ampaschal.google.TestHelper;
+import com.ampaschal.google.enums.ProfileKey;
 
 public class FilePermissionsTransformer implements ClassFileTransformer {
 

@@ -1,13 +1,12 @@
 package com.ampaschal.google.apps;
 
 
-import com.ampaschal.google.PermissionsManager;
-import com.ampaschal.google.TestHelper;
-import com.ampaschal.google.enums.ProfileKey;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+
+import com.ampaschal.google.TestHelper;
+import com.ampaschal.google.enums.ProfileKey;
 
 public class WordCountApp {
     public static void main(String[] args) {
