@@ -33,7 +33,8 @@ public class Utils {
 
                         if (RuntimeMode.ENFORCE.equals(runtimeMode) || RuntimeMode.BOTH.equals(runtimeMode)) {
                             enforce = true;
-                        } else if (RuntimeMode.MONITOR.equals(runtimeMode) || RuntimeMode.BOTH.equals(runtimeMode)) {
+                        } 
+                        if (RuntimeMode.MONITOR.equals(runtimeMode) || RuntimeMode.BOTH.equals(runtimeMode)) {
                             monitor = true;
                         }
                     } else if ("outputPath".equals(argName)) {

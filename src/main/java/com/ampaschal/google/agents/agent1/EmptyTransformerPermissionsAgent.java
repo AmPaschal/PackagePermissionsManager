@@ -7,10 +7,12 @@ import com.ampaschal.google.enums.ProfileKey;
 import com.ampaschal.google.utils.Utils;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.Socket;
 import java.security.ProtectionDomain;
 
 public class EmptyTransformerPermissionsAgent {
@@ -35,7 +37,7 @@ public class EmptyTransformerPermissionsAgent {
 
         try {
 
-            inst.retransformClasses(FileInputStream.class);
+            inst.retransformClasses(FileInputStream.class, FileOutputStream.class, Socket.class, ProcessBuilder.class, Thread.class);
         } catch (UnmodifiableClassException e) {
             throw new RuntimeException(e);
         }
