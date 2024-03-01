@@ -21,10 +21,6 @@ public class BytecodeGeneratorAgent {
 
         System.out.println("Permissions Agent");
         
-        PermissionArgs permissionArgs = Utils.processAgentArgs(agentArgs);
-
-        PermissionsManager.setup(permissionArgs);
-        
 
         inst.addTransformer(new BytecodeGenerator(), true);
 

@@ -16,6 +16,7 @@ public class TransformProps {
     private List<String> excludeClasses;
     private IResourceItemCallback resourceItemCallback;
     private int resourceItemIndex;
+    private String methodToInvoke;
 
     public TransformProps(String className, String methodName, List<String> descriptors, int resourceOp) {
         this.className = className;
@@ -36,6 +37,14 @@ public class TransformProps {
 
     public void setMethodDescriptors(List<TransformMethodProps> methodDescriptors) {
         this.methodDescriptors = methodDescriptors;
+    }
+
+    public String getMethodToInvoke() {
+        return methodToInvoke;
+    }
+
+    public void setMethodToInvoke(String methodName) {
+        this.methodToInvoke = methodName;
     }
 
     public int getResourceType() {

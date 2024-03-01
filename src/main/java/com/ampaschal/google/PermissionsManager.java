@@ -26,13 +26,16 @@ public class PermissionsManager {
     private static Map<String, PermissionObject> monitorObjectMapDirect = new HashMap<>();
     private static Map<String, PermissionObject> monitorObjectMapTransitive = new HashMap<>();
 
+    private static Map<Thread, LinkedHashSet<PermissionObject>> threadParentPermissions = new HashMap<>();
+
     public static void log() {
         System.out.println("Permissions check will be done here");
 
     }
 
-    public static void mockTest(int resourceType, int resourceOp, String resourceItem) throws SecurityException {
-        System.out.println("Substituting permission check " + resourceItem + resourceType + resourceOp);
+    public static void mockTest(int resourceType, int resourceOp, Object resourceItem) throws SecurityException {
+        System.out.println("Substituting permission check for " + resourceItem);
+        System.out.println("Type and Op: " + resourceType + resourceOp);
 
         // throw new SecurityException("Trying things out");
     }
@@ -252,16 +255,16 @@ public class PermissionsManager {
         return subjectPaths;
     }
 
-    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem)
+    public static void checkPermission(int resourceTypeInt, int resourceOpInt, Object resourceItem)
             throws IOException, FileNotFoundException {
 
         LinkedHashSet<String> subjectPaths = getSubjectPaths();
 
-        checkPermission(resourceTypeInt, resourceOpInt, resourceItem, subjectPaths);
+        checkPermission(resourceTypeInt, resourceOpInt, (String) resourceItem, subjectPaths);
 
     }
 
-    public static void checkPermission(int resourceTypeInt, int resourceOpInt, String resourceItem,
+    public static void checkPermission(int resourceTypeInt, int resourceOpInt, Object resourceItem,
             LinkedHashSet<String> subjectPaths) throws IOException, FileNotFoundException {
 
         ResourceType resourceType = ResourceType.getResourceType(resourceTypeInt); // Change to string
@@ -274,7 +277,7 @@ public class PermissionsManager {
 
         int subjectPathSize = subjectPaths.size();
 
-        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem);
+        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem.toString());
 
         if (!permissionArgs.isEnforceModeEnabled()) {
             return;
@@ -282,18 +285,30 @@ public class PermissionsManager {
 
         // Get the list of permission objects from the stack trace
 
-        Set<PermissionObject> permissionObjects = getPermissions(subjectPaths);
+        LinkedHashSet<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
-        if (permissionObjects.isEmpty()) {
+        if (ResourceType.THREAD.getId() == resourceTypeInt) {
+            saveThreadParentPermission((Thread)resourceItem, permissionObjects);
             return;
         }
 
+        LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(), new LinkedHashSet<>());
+
+        parentPermissions.addAll(permissionObjects);
+
+        if (parentPermissions.isEmpty()) {
+            return;
+        }
+
+        String resourceItemString = (String)resourceItem;
+
         // We confirm each package in the stacktrace has the necessary permissions
-        for (PermissionObject permissionObject : permissionObjects) {
-            boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItem);
+        // Evaluate what is faster - checking permission on each item or creating a compressed item first
+        for (PermissionObject permissionObject : parentPermissions) {
+            boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItemString);
 
             if (!permitted) {
-                callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItem);
+                callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItemString);
                 if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
                     throw new IOException("Permission not granted");
                 } else if (ResourceType.FS.equals(resourceType)) {
@@ -302,6 +317,11 @@ public class PermissionsManager {
             }
         }
 
+    }
+
+    private static void saveThreadParentPermission(Thread thread, LinkedHashSet<PermissionObject> permissionObjects) {
+        
+        threadParentPermissions.put(thread, permissionObjects);
     }
 
     private static boolean performPermissionCheck(PermissionObject permissionObject, ResourceType resourceType,
@@ -372,9 +392,9 @@ public class PermissionsManager {
         return packageNameBuilder.toString();
     }
 
-    private static Set<PermissionObject> getPermissions(Set<String> subjectPaths) {
+    private static LinkedHashSet<PermissionObject> getPermissions(Set<String> subjectPaths) {
 
-        Set<PermissionObject> permissionObjects = new HashSet<>();
+        LinkedHashSet<PermissionObject> permissionObjects = new LinkedHashSet<PermissionObject>();
 
         for (String path : subjectPaths) {
 

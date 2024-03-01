@@ -7,9 +7,12 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.Socket;
+import java.nio.channels.AsynchronousFileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
@@ -18,6 +21,7 @@ import com.ampaschal.google.PermissionsManager;
 import com.ampaschal.google.TestHelper;
 import com.ampaschal.google.entities.PermissionArgs;
 import com.ampaschal.google.entities.TransformProps;
+import com.ampaschal.google.entities.TransformProps.TransformMethodProps;
 import com.ampaschal.google.enums.ProfileKey;
 import com.ampaschal.google.enums.ResourceOp;
 import com.ampaschal.google.enums.ResourceType;
@@ -28,6 +32,7 @@ public class PermissionsAgent {
 
 
     public static void premain(String agentArgs, Instrumentation inst) {
+        TestHelper.setup(false, true);
 
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
@@ -37,7 +42,7 @@ public class PermissionsAgent {
 
         PermissionsManager.setup(permissionArgs);
         
-        Map<String, TransformProps> transformPropsMap = getTransformPropMap(true, true, true, true, true);
+        Map<String, TransformProps> transformPropsMap = getTransformPropMap(true, true, true, true, false);
 
         inst.addTransformer(new PermissionsTransformer(transformPropsMap, true), true);
 
@@ -45,7 +50,7 @@ public class PermissionsAgent {
 
         try {
             // We retransform these classes because they are already loaded into the JVM
-            inst.retransformClasses(FileInputStream.class, FileOutputStream.class, Socket.class, ProcessBuilder.class, Thread.class);
+            inst.retransformClasses(FileInputStream.class, FileOutputStream.class, Socket.class, ProcessBuilder.class, Thread.class, AsynchronousFileChannel.class);
         } catch (UnmodifiableClassException e) {
             throw new RuntimeException(e);
         }
@@ -78,6 +83,22 @@ public class PermissionsAgent {
                     0
             );
             transformPropsMap.put(getClassName(FileInputStream.class), class1);
+        }
+
+        if (fsRead) {
+            TransformProps class1 = new TransformProps(getClassName(AsynchronousFileChannel.class), "open",
+                    Collections.singletonList("(Ljava/nio/file/Path;Ljava/util/Set;Ljava/util/concurrent/ExecutorService;[Ljava/nio/file/attribute/FileAttribute;)Ljava/nio/channels/AsynchronousFileChannel;"), ResourceOp.READ.getId());
+            class1.setTransformProps(ResourceType.FS.getId(), getClassName(FileNotFoundException.class),
+                    Arrays.asList("jdk.internal.loader", "sun.misc.URLClassPath$FileLoader"),
+                    (methodVisitor, methodName, methodDescriptor) -> {
+                        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/nio/file/Path", "toFile", "()Ljava/io/File;", true);
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/File", "getAbsolutePath", "()Ljava/lang/String;", false);
+
+                    },
+                    0
+            );
+            transformPropsMap.put(getClassName(AsynchronousFileChannel.class), class1);
         }
 
         if (fsWrite) {
@@ -136,13 +157,22 @@ public class PermissionsAgent {
 
         if (threadStart) {
 
-            TransformProps class5 = new TransformProps(getClassName(Thread.class), "start",
-                    Collections.singletonList("()V"), ResourceOp.EXECUTE.getId());
+            TransformProps class5 = new TransformProps(getClassName(Thread.class));
+
+            List<TransformMethodProps> methodDescriptors = new ArrayList<>();
+
+            methodDescriptors.add(new TransformMethodProps("start",
+            Collections.singletonList("()V"), ResourceOp.START.getId()));
+            methodDescriptors.add(new TransformMethodProps("exit",
+            Collections.singletonList("()V"), ResourceOp.STOP.getId()));
+
+            class5.setMethodDescriptors(methodDescriptors);
 
             class5.setTransformProps(ResourceType.THREAD.getId(), getClassName(IllegalThreadStateException.class),
                     null,
                     (methodVisitor, methodName, methodDescriptor) -> {
-                        methodVisitor.visitLdcInsn("");
+                        // We get the thread object ('this')
+                        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
                     },
                     0
             );

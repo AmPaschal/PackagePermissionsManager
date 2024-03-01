@@ -7,6 +7,8 @@ public enum ResourceOp {
     EXECUTE (2),
     CONNECT(3),
     ACCEPT(4),
+    START(5),
+    STOP(6),
     ;
 
     private int id;

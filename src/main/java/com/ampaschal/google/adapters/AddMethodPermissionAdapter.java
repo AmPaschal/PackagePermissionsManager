@@ -109,7 +109,7 @@ public class AddMethodPermissionAdapter extends LocalVariablesSorter {
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.ICONST_2);
-        methodVisitor.visitLdcInsn(Type.getType("Ljava/lang/String;"));
+        methodVisitor.visitLdcInsn(Type.getType("Ljava/lang/Object;"));
         methodVisitor.visitInsn(Opcodes.AASTORE);
         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false);
         lv = newLocal(Type.INT_TYPE);

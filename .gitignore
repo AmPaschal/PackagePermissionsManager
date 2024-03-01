@@ -42,3 +42,4 @@ build/
 ### Others ###
 *.jar
 *.class
+/transformed/
