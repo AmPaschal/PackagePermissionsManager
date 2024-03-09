@@ -1,5 +1,6 @@
 package com.ampaschal.google;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,8 +24,8 @@ public class PermissionsManager {
     private static PackagePermissionResolver permissionResolver;
 
     private static PermissionArgs permissionArgs;
-    private static Map<String, PermissionObject> monitorObjectMapDirect = new HashMap<>();
-    private static Map<String, PermissionObject> monitorObjectMapTransitive = new HashMap<>();
+
+    private static Map<String, PermissionObject> monitorMap = new HashMap<>();
 
     private static Map<Thread, LinkedHashSet<PermissionObject>> threadParentPermissions = new HashMap<>();
 
@@ -49,11 +50,74 @@ public class PermissionsManager {
         if (permissionArgs.isMonitorModeEnabled()) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {
-                    writeJsonFile(permissionArgs.getOutputPath());
+                    writeJsonFile(permissionArgs.getOutputFile());
                 }
             });
         }
 
+    }
+
+    private static LinkedHashSet<String> getForSubjectPackageNames(LinkedHashSet<String> subjectPaths) {
+        LinkedHashSet<String> packageNames = new LinkedHashSet<>();
+        for (String subject : subjectPaths) {
+            packageNames.add(getPackageName(subject));
+        }
+        return packageNames;
+    }
+
+    private static void updateMonitorMap(String packageName, ResourceType resourceType, ResourceOp resourceOp,
+            String resourceItem, boolean direct) {
+
+        PermissionObject permissionObject = monitorMap.get(packageName);
+
+        if (permissionObject == null) {
+            permissionObject = new PermissionObject();
+            monitorMap.put(packageName, permissionObject);
+        }
+
+        if (resourceType == ResourceType.FS) {
+            permissionObject.setFs(true);
+            if (resourceOp == ResourceOp.READ) {
+                permissionObject.setFsRead(true);
+
+                permissionObject.addFsReadAllowed(resourceItem);
+                if (direct) {
+                    permissionObject.addFsReadDirect(resourceItem);
+                }
+            } 
+            else if (resourceOp == ResourceOp.WRITE) {
+                permissionObject.setFsWrite(true);
+                permissionObject.addFsWriteAllowed(resourceItem);
+                if (direct) {
+                    permissionObject.addFsWriteDirect(resourceItem);
+                }
+            }
+        } else if (resourceType == ResourceType.NET) {
+            permissionObject.setNet(true);
+            if (resourceOp == ResourceOp.CONNECT) {
+                permissionObject.setNetConnect(true);
+                permissionObject.addNetConnectAllowed(resourceItem);
+                if (direct) {
+                    permissionObject.addNetConnectDirect(resourceItem);
+                }
+            } else if (resourceOp == ResourceOp.ACCEPT) {
+                permissionObject.setNetAccept(true);
+                permissionObject.addNetAcceptAllowed(resourceItem);
+                if (direct) {
+                    permissionObject.addNetAcceptDirect(resourceItem);
+                }
+            }
+        }
+        else if (resourceType == ResourceType.RUNTIME) {
+            permissionObject.setRuntime(true);
+            if (resourceOp == ResourceOp.EXECUTE) {
+                permissionObject.setRuntimeExec(true);
+                permissionObject.addRuntimeExecAllowed(resourceItem);
+                if (direct) {
+                    permissionObject.addRuntimeExecDirect(resourceItem);
+                }
+            }
+        }
     }
 
     private static PermissionsCallback getMonitorModeCallback() {
@@ -62,19 +126,16 @@ public class PermissionsManager {
             public void onPermissionRequested(LinkedHashSet<String> subjectPaths, int subjectPathSize,
                     ResourceType resourceType, ResourceOp resourceOp, String resourceItem) {
 
-                Iterator<String> subjectPathsIterator = subjectPaths.iterator();
+                LinkedHashSet<String> packageNames = getForSubjectPackageNames(subjectPaths);
 
-                String subject = subjectPathsIterator.next();
-                String packageName = getPackageName(subject);
-                // System.out.println("[PERMISSION] " + packageName + " " + subjectPathSize + "
-                // " + resourceType + " " + resourceOp + " " + resourceItem);
-                updateMonitorMapDirect(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
-                updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+                // System.out.println("Permission requested: " + resourceItem + " " + resourceType + " " + resourceOp + " " + subjectPathSize + " " + packageNames.size());
 
-                for (int i = 1; i < subjectPathSize; i++) {
-                    subject = subjectPathsIterator.next();
-                    packageName = getPackageName(subject);
-                    updateMonitorMapTransitive(packageName, subjectPathSize, resourceType, resourceOp, resourceItem);
+                // We want to identify the parent package making this request, which should be the package at the top of the stack trace
+                boolean direct = true; 
+
+                for (String packageName : packageNames) {
+                    updateMonitorMap(packageName, resourceType, resourceOp, resourceItem, direct);
+                    direct = false;
                 }
 
             }
@@ -87,104 +148,13 @@ public class PermissionsManager {
         };
     }
 
-    private static void writeJsonFile(String outputPath) {
+    private static void writeJsonFile(String outputFile) {
 
         try {
-            String directFileName = "direct-dependencies.json";
-            String transitiveFileName = "transitive-dependencies.json";
-
-            // Use ObjectMapper to write monitorObjectMapDirect and monitorObjectMapTransitive to files
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(Paths.get(outputPath, directFileName).toFile(), monitorObjectMapDirect);
-            mapper.writeValue(Paths.get(outputPath, transitiveFileName).toFile(), monitorObjectMapTransitive);
+            mapper.writeValue(new File(outputFile), monitorMap);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static void updateMonitorMapDirect(String subject, int subjectPathSize, ResourceType resourceType,
-            ResourceOp resourceOp, String resourceItem) {
-
-        if (!monitorObjectMapDirect.containsKey(subject)) {
-            monitorObjectMapDirect.put(subject, new PermissionObject());
-        }
-
-        PermissionObject curObjectDirect = monitorObjectMapDirect.get(subject);
-
-        if (resourceType == ResourceType.FS) {
-            if (resourceOp == ResourceOp.READ) {
-                curObjectDirect.setFsRead(true);
-
-                curObjectDirect.addAllowedPath(resourceItem);
-
-            } else if (resourceOp == ResourceOp.WRITE) {
-
-                curObjectDirect.setFsWrite(true);
-
-                curObjectDirect.addAllowedPath(resourceItem);
-
-            }
-
-        } else if (resourceType == ResourceType.NET) {
-            if (resourceOp == ResourceOp.ACCEPT) {
-                curObjectDirect.setNetAccept(true);
-
-                curObjectDirect.addAllowedUrl(resourceItem);
-
-            } else if (resourceOp == ResourceOp.CONNECT) {
-                curObjectDirect.setNetConnect(true);
-
-                curObjectDirect.addAllowedUrl(resourceItem);
-
-            }
-
-        } else {
-            curObjectDirect.setRuntimeExec(true);
-            curObjectDirect.addAllowedCommand(resourceItem);
-
-        }
-    }
-
-    private static void updateMonitorMapTransitive(String subject, int subjectPathSize, ResourceType resourceType,
-            ResourceOp resourceOp, String resourceItem) {
-
-        if (!monitorObjectMapTransitive.containsKey(subject)) {
-            monitorObjectMapTransitive.put(subject, new PermissionObject());
-        }
-
-        PermissionObject curObjectTransitive = monitorObjectMapTransitive.get(subject);
-
-        if (resourceType == ResourceType.FS) {
-            if (resourceOp == ResourceOp.READ) {
-                curObjectTransitive.setFsRead(true);
-
-                curObjectTransitive.addAllowedPath(resourceItem);
-
-            } else if (resourceOp == ResourceOp.WRITE) {
-
-                curObjectTransitive.setFsWrite(true);
-
-                curObjectTransitive.addAllowedPath(resourceItem);
-
-            }
-
-        } else if (resourceType == ResourceType.NET) {
-            if (resourceOp == ResourceOp.ACCEPT) {
-                curObjectTransitive.setNetAccept(true);
-
-                curObjectTransitive.addAllowedUrl(resourceItem);
-
-            } else if (resourceOp == ResourceOp.CONNECT) {
-                curObjectTransitive.setNetConnect(true);
-
-                curObjectTransitive.addAllowedUrl(resourceItem);
-
-            }
-
-        } else {
-            curObjectTransitive.setRuntimeExec(true);
-            curObjectTransitive.addAllowedCommand(resourceItem);
-
         }
     }
 
@@ -277,7 +247,8 @@ public class PermissionsManager {
 
         int subjectPathSize = subjectPaths.size();
 
-        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp, resourceItem.toString());
+        callback.onPermissionRequested(subjectPaths, subjectPathSize, resourceType, resourceOp,
+                resourceItem.toString());
 
         if (!permissionArgs.isEnforceModeEnabled()) {
             return;
@@ -288,11 +259,12 @@ public class PermissionsManager {
         LinkedHashSet<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
         if (ResourceType.THREAD.getId() == resourceTypeInt) {
-            saveThreadParentPermission((Thread)resourceItem, permissionObjects);
+            saveThreadParentPermission((Thread) resourceItem, permissionObjects);
             return;
         }
 
-        LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(), new LinkedHashSet<>());
+        LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(),
+                new LinkedHashSet<>());
 
         parentPermissions.addAll(permissionObjects);
 
@@ -300,10 +272,11 @@ public class PermissionsManager {
             return;
         }
 
-        String resourceItemString = (String)resourceItem;
+        String resourceItemString = (String) resourceItem;
 
         // We confirm each package in the stacktrace has the necessary permissions
-        // Evaluate what is faster - checking permission on each item or creating a compressed item first
+        // Evaluate what is faster - checking permission on each item or creating a
+        // compressed item first
         for (PermissionObject permissionObject : parentPermissions) {
             boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItemString);
 
@@ -320,7 +293,7 @@ public class PermissionsManager {
     }
 
     private static void saveThreadParentPermission(Thread thread, LinkedHashSet<PermissionObject> permissionObjects) {
-        
+
         threadParentPermissions.put(thread, permissionObjects);
     }
 
@@ -331,46 +304,84 @@ public class PermissionsManager {
         // Replace with string matching, eg fs.read. If granted, check fs.read.deny; if
         // denied, check fs.read.allow
         if (resourceType == ResourceType.FS) {
-            if (permissionObject.getAllowedPaths().contains(resourceItem)) {
-                return true;
-            } else if (permissionObject.getDeniedPaths().contains(resourceItem)) {
+
+            if (!permissionObject.isFs()) {
                 return false;
-            } else if ((resourceOp == ResourceOp.READ && permissionObject.isFsRead())
-                    || (resourceOp == ResourceOp.WRITE && permissionObject.isFsWrite())) {
-                return true;
-            } else {
-                return permissionObject.isFs();
             }
+
+            if (resourceOp == ResourceOp.READ) {
+                if (!permissionObject.isFsRead()) {
+                    return false;
+                }
+
+                if (permissionObject.getFsReadDenied().contains(resourceItem)) {
+                    return false;
+                } else if (permissionObject.getFsReadAllowed().isEmpty() || permissionObject.getFsReadAllowed().contains(resourceItem)) {
+                    return true;
+                } 
+            } else if (resourceOp == ResourceOp.WRITE) {
+                if (!permissionObject.isFsWrite()) {
+                    return false;
+                }
+
+                if (permissionObject.getFsWriteDenied().contains(resourceItem)) {
+                    return false;
+                } else if (permissionObject.getFsWriteAllowed().isEmpty() || permissionObject.getFsWriteAllowed().contains(resourceItem)) {
+                    return true;
+                } 
+            }
+
         } else if (resourceType == ResourceType.NET) {
-            if (permissionObject.getAllowedUrls().contains(resourceItem)) {
-                return true;
-            } else if (permissionObject.getDeniedUrls().contains(resourceItem)) {
+
+            if (!permissionObject.isNet()) {
                 return false;
-            } else if ((resourceOp == ResourceOp.CONNECT && permissionObject.isNetConnect())
-                    || (resourceOp == ResourceOp.ACCEPT && permissionObject.isNetAccept())) {
-                return true;
-            } else {
-                return permissionObject.isNet();
             }
+
+            if (resourceOp == ResourceOp.CONNECT) {
+                System.out.println("Checking connect: " + permissionObject.isNetConnect());
+                if (!permissionObject.isNetConnect()) {
+                    return false;
+                }
+
+                if (permissionObject.getNetConnectDenied().contains(resourceItem)) {
+                    return false;
+                } else if (permissionObject.getNetConnectAllowed().isEmpty() || permissionObject.getNetConnectAllowed().contains(resourceItem)) {
+                    return true;
+                } 
+            } else if (resourceOp == ResourceOp.ACCEPT) {
+                System.out.println("Checking accept: " + permissionObject.isNetAccept());
+                if (!permissionObject.isNetAccept()) {
+                    return false;
+                }
+
+                if (permissionObject.getNetAcceptDenied().contains(resourceItem)) {
+                    return false;
+                } else if (permissionObject.getNetAcceptAllowed().isEmpty() || permissionObject.getNetAcceptAllowed().contains(resourceItem)) {
+                    return true;
+                } 
+            }
+
         } else if (resourceType == ResourceType.RUNTIME) {
-            if (permissionObject.getAllowedCommands().contains(resourceItem)) {
-                return true;
-            } else if (permissionObject.getDeniedCommands().contains(resourceItem)) {
+
+            if (!permissionObject.isRuntime()) {
                 return false;
-            } else if (resourceOp == ResourceOp.EXECUTE && permissionObject.isRuntimeExec()) {
-                return true;
-            } else {
-                return permissionObject.isRuntime();
             }
-        } else if (resourceType == ResourceType.THREAD) {
-            if (resourceOp == ResourceOp.EXECUTE && permissionObject.isThreadStart()) {
-                return true;
-            } else {
-                return permissionObject.isThread();
+
+            if (resourceOp == ResourceOp.EXECUTE) {
+                if (!permissionObject.isRuntimeExec()) {
+                    return false;
+                }
+
+                if (permissionObject.getRuntimeExecDenied().contains(resourceItem)) {
+                    return false;
+                } else if (permissionObject.getRuntimeExecAllowed().isEmpty() || permissionObject.getRuntimeExecAllowed().contains(resourceItem)) {
+                    return true;
+                } 
             }
+
         }
 
-        return true;
+        return false;
     }
 
     private static String getPackageName(String className) {
@@ -383,11 +394,10 @@ public class PermissionsManager {
         }
         int numSegments = Math.min(3, segments.length - 1);
 
-        StringBuilder packageNameBuilder = new StringBuilder();
-        for (int i = 0; i < numSegments - 1; i++) {
-            packageNameBuilder.append(segments[i]).append(".");
+        StringBuilder packageNameBuilder = new StringBuilder(segments[0]);
+        for (int i = 1; i < numSegments - 1; i++) {
+            packageNameBuilder.append(".").append(segments[i]);
         }
-        packageNameBuilder.append(segments[numSegments - 1]);
 
         return packageNameBuilder.toString();
     }

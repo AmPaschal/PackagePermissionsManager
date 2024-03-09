@@ -4,14 +4,14 @@ public class PermissionArgs {
     
     private boolean enforceModeEnabled;
     private boolean monitorModeEnabled;
-    private String outputPath;
+    private String outputFile;
     private String permissionFilePath;
 
-    public PermissionArgs(String permissionFilePath, String outputPath, boolean enforce, boolean monitor) {
+    public PermissionArgs(String permissionFilePath, String outputFile, boolean enforce, boolean monitor) {
         this.enforceModeEnabled = enforce;
         this.monitorModeEnabled = monitor;
         this.permissionFilePath = permissionFilePath;
-        this.outputPath = outputPath;
+        this.outputFile = outputFile;
     }
 
     public boolean isEnforceModeEnabled() {
@@ -22,8 +22,8 @@ public class PermissionArgs {
         return monitorModeEnabled;
     }
 
-    public String getOutputPath() {
-        return outputPath;
+    public String getOutputFile() {
+        return outputFile;
     }
 
     public String getPermissionFilePath () {
