@@ -32,7 +32,7 @@ public class PermissionsAgent {
 
 
     public static void premain(String agentArgs, Instrumentation inst) {
-        TestHelper.setup(false, true);
+        TestHelper.setup(false, false);
 
         TestHelper.logTime(ProfileKey.AGENT_CALLED);
 
