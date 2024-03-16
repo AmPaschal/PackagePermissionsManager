@@ -2,12 +2,12 @@ package com.ampaschal.google;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -80,31 +80,39 @@ public class PermissionsManager {
             if (resourceOp == ResourceOp.READ) {
                 permissionObject.setFsRead(true);
 
-                permissionObject.addFsReadAllowed(resourceItem);
+                
                 if (direct) {
-                    permissionObject.addFsReadDirect(resourceItem);
+                    permissionObject.addFsReadAllowed(resourceItem);
+                } else {
+                    permissionObject.addFsReadTransitive(resourceItem);
                 }
             } 
             else if (resourceOp == ResourceOp.WRITE) {
                 permissionObject.setFsWrite(true);
-                permissionObject.addFsWriteAllowed(resourceItem);
+                
                 if (direct) {
-                    permissionObject.addFsWriteDirect(resourceItem);
+                    permissionObject.addFsWriteAllowed(resourceItem);
+                } else {
+                    permissionObject.addFsWriteTransitive(resourceItem);
                 }
             }
         } else if (resourceType == ResourceType.NET) {
             permissionObject.setNet(true);
             if (resourceOp == ResourceOp.CONNECT) {
                 permissionObject.setNetConnect(true);
-                permissionObject.addNetConnectAllowed(resourceItem);
+                
                 if (direct) {
-                    permissionObject.addNetConnectDirect(resourceItem);
+                    permissionObject.addNetConnectAllowed(resourceItem);
+                } else {
+                    permissionObject.addNetConnectTransitive(resourceItem);
                 }
             } else if (resourceOp == ResourceOp.ACCEPT) {
                 permissionObject.setNetAccept(true);
-                permissionObject.addNetAcceptAllowed(resourceItem);
+                
                 if (direct) {
-                    permissionObject.addNetAcceptDirect(resourceItem);
+                    permissionObject.addNetAcceptAllowed(resourceItem);
+                } else {
+                    permissionObject.addNetAcceptTransitive(resourceItem);
                 }
             }
         }
@@ -112,9 +120,11 @@ public class PermissionsManager {
             permissionObject.setRuntime(true);
             if (resourceOp == ResourceOp.EXECUTE) {
                 permissionObject.setRuntimeExec(true);
-                permissionObject.addRuntimeExecAllowed(resourceItem);
+                
                 if (direct) {
-                    permissionObject.addRuntimeExecDirect(resourceItem);
+                    permissionObject.addRuntimeExecAllowed(resourceItem);
+                } else {
+                    permissionObject.addRuntimeExecTransitive(resourceItem);
                 }
             }
         }
@@ -169,6 +179,21 @@ public class PermissionsManager {
             @Override
             public void onPermissionFailure(Set<String> subjectPaths, ResourceType resourceType, ResourceOp resourceOp,
                     String resourceItem) {
+                try {
+                    String logFile = "policy-failures.log";
+                    FileWriter writer = new FileWriter(logFile, true);
+                    writer.write("Permission not granted: \n");
+                    writer.write("Accessor package: " + subjectPaths.iterator().next() + "\n");
+                    writer.write("Resource Type: " + resourceType + "\n");
+                    writer.write("Resource Op: " + resourceOp + "\n");
+                    writer.write("Resource: " + resourceItem + "\n");
+                    writer.write("------------------------------------------------\n\n");
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                        
+                        
             }
 
         };
@@ -254,42 +279,135 @@ public class PermissionsManager {
             return;
         }
 
+        PermissionObject permissionObject = null;
+
+        if (permissionArgs.isEnableCache() && ResourceType.FS == resourceType) {
+            String cacheKey = getCacheKey(subjectPaths);
+            permissionObject = permissionResolver.getPermissionFromCache(cacheKey);
+        }
+
         // Get the list of permission objects from the stack trace
 
-        LinkedHashSet<PermissionObject> permissionObjects = getPermissions(subjectPaths);
+        if (permissionObject == null) {
+            LinkedHashSet<PermissionObject> permissionObjects = getPermissions(subjectPaths);
 
-        if (ResourceType.THREAD.getId() == resourceTypeInt) {
-            saveThreadParentPermission((Thread) resourceItem, permissionObjects);
-            return;
-        }
+            if (ResourceType.THREAD.getId() == resourceTypeInt) {
+                saveThreadParentPermission((Thread) resourceItem, permissionObjects);
+                return;
+            }
 
-        LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(),
+            LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(),
                 new LinkedHashSet<>());
 
-        parentPermissions.addAll(permissionObjects);
+            parentPermissions.addAll(permissionObjects);
 
-        if (parentPermissions.isEmpty()) {
-            return;
+            if (parentPermissions.isEmpty()) {
+                return;
+            }
+
+            permissionObject = compressPermissionObjects(permissionObjects, resourceType, resourceOp, permissionArgs.getFineGranularity());
+
+            if (permissionArgs.isEnableCache() && ResourceType.FS == resourceType) {
+                String cacheKey = getCacheKey(subjectPaths);
+                permissionResolver.savePermissionToCache(cacheKey, permissionObject);
+            }
         }
 
+        // LinkedHashSet<PermissionObject> permissionObjects = getPermissions(subjectPaths);
+
+        // if (ResourceType.THREAD.getId() == resourceTypeInt) {
+        //     saveThreadParentPermission((Thread) resourceItem, permissionObjects);
+        //     return;
+        // }
+
+        // LinkedHashSet<PermissionObject> parentPermissions = threadParentPermissions.getOrDefault(Thread.currentThread(),
+        //         new LinkedHashSet<>());
+
+        // parentPermissions.addAll(permissionObjects);
+
+        // if (parentPermissions.isEmpty()) {
+        //     return;
+        // }
+
         String resourceItemString = (String) resourceItem;
+
+        // PermissionObject permissionObject = compressPermissionObjects(parentPermissions, resourceType, resourceOp, permissionArgs.getFineGranularity());
 
         // We confirm each package in the stacktrace has the necessary permissions
         // Evaluate what is faster - checking permission on each item or creating a
         // compressed item first
-        for (PermissionObject permissionObject : parentPermissions) {
-            boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItemString);
+        boolean permitted = performPermissionCheck(permissionObject, resourceType, resourceOp, resourceItemString);
 
-            if (!permitted) {
-                callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItemString);
-                if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
-                    throw new IOException("Permission not granted");
-                } else if (ResourceType.FS.equals(resourceType)) {
-                    throw new FileNotFoundException("Permission not granted");
+        if (!permitted) {
+            callback.onPermissionFailure(subjectPaths, resourceType, resourceOp, resourceItemString);
+            if (ResourceType.NET.equals(resourceType) || ResourceType.RUNTIME.equals(resourceType)) {
+                throw new IOException("Permission not granted");
+            } else if (ResourceType.FS.equals(resourceType)) {
+                throw new FileNotFoundException("Permission not granted");
+            }
+        }
+
+    }
+
+    private static String getCacheKey(LinkedHashSet<String> subjectPaths) {
+        StringBuilder cacheKey = new StringBuilder();
+        int count = 0;
+        for (String path : subjectPaths) {
+            cacheKey.append(path);
+            if (count >= 5) {
+                break;
+            }
+            count++;
+        }
+        return cacheKey.toString();
+    }
+
+    private static PermissionObject compressPermissionObjects(LinkedHashSet<PermissionObject> permissionObjects, ResourceType resourceType, ResourceOp resourceOp, boolean fineGranularity) {
+
+        PermissionObject compObject = new PermissionObject(true);
+        for (PermissionObject permObject: permissionObjects) {
+
+            if (resourceType == ResourceType.FS) {
+                compObject.setFs(compObject.isFs() && permObject.isFs());
+                if (resourceOp == ResourceOp.READ) {
+                    compObject.setFsRead(compObject.isFsRead() && permObject.isFsRead());
+                    if (fineGranularity) {
+                        compObject.getFsReadAllowed().addAll(permObject.getFsReadAllowed());
+                        compObject.getFsReadDenied().addAll(permObject.getFsReadDenied());
+                    }
+                } else if (resourceOp == ResourceOp.WRITE) {
+                    compObject.setFsWrite(compObject.isFsWrite() && permObject.isFsWrite());
+                    if (fineGranularity) {
+                        compObject.getFsWriteAllowed().addAll(permObject.getFsWriteAllowed());
+                        compObject.getFsWriteDenied().addAll(permObject.getFsWriteDenied());
+                    }
+                }
+            } else if (resourceType == ResourceType.NET) {
+                compObject.setNet(compObject.isNet() && permObject.isNet());
+                if (resourceOp == ResourceOp.CONNECT) {
+                    compObject.setNetConnect(compObject.isNetConnect() && permObject.isNetConnect());
+                    if (fineGranularity) {
+                        compObject.getNetConnectAllowed().addAll(permObject.getNetConnectAllowed());
+                        compObject.getNetConnectDenied().addAll(permObject.getNetConnectDenied());
+                    }
+                } else if (resourceOp == ResourceOp.ACCEPT) {
+                    compObject.setNetAccept(compObject.isNetAccept() && permObject.isNetAccept());
+                    if (fineGranularity) {
+                        compObject.getNetAcceptAllowed().addAll(permObject.getNetAcceptAllowed());
+                        compObject.getNetAcceptDenied().addAll(permObject.getNetAcceptDenied());
+                    }
+                }
+            } else if (resourceType == ResourceType.RUNTIME) {
+                compObject.setRuntime(compObject.isRuntime() && permObject.isRuntime());
+                compObject.setRuntimeExec(compObject.isRuntimeExec() && permObject.isRuntimeExec());
+                if (fineGranularity) {
+                    compObject.getRuntimeExecAllowed().addAll(permObject.getRuntimeExecAllowed());
+                    compObject.getRuntimeExecDenied().addAll(permObject.getRuntimeExecDenied());
                 }
             }
         }
 
+        return compObject;
     }
 
     private static void saveThreadParentPermission(Thread thread, LinkedHashSet<PermissionObject> permissionObjects) {
@@ -314,21 +432,29 @@ public class PermissionsManager {
                     return false;
                 }
 
-                if (permissionObject.getFsReadDenied().contains(resourceItem)) {
-                    return false;
-                } else if (permissionObject.getFsReadAllowed().isEmpty() || permissionObject.getFsReadAllowed().contains(resourceItem)) {
+                if (permissionArgs.getFineGranularity()) {
+                    if (permissionObject.getFsReadDenied().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return false;
+                    } else if (permissionObject.getFsReadAllowed().isEmpty() || permissionObject.getFsReadAllowed().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return true;
+                    } 
+                } else {
                     return true;
-                } 
+                }
             } else if (resourceOp == ResourceOp.WRITE) {
                 if (!permissionObject.isFsWrite()) {
                     return false;
                 }
 
-                if (permissionObject.getFsWriteDenied().contains(resourceItem)) {
-                    return false;
-                } else if (permissionObject.getFsWriteAllowed().isEmpty() || permissionObject.getFsWriteAllowed().contains(resourceItem)) {
+                if (permissionArgs.getFineGranularity()) {
+                    if (permissionObject.getFsWriteDenied().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return false;
+                    } else if (permissionObject.getFsWriteAllowed().isEmpty() || permissionObject.getFsWriteAllowed().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return true;
+                    } 
+                } else {
                     return true;
-                } 
+                }
             }
 
         } else if (resourceType == ResourceType.NET) {
@@ -338,27 +464,34 @@ public class PermissionsManager {
             }
 
             if (resourceOp == ResourceOp.CONNECT) {
-                System.out.println("Checking connect: " + permissionObject.isNetConnect());
                 if (!permissionObject.isNetConnect()) {
                     return false;
                 }
 
-                if (permissionObject.getNetConnectDenied().contains(resourceItem)) {
-                    return false;
-                } else if (permissionObject.getNetConnectAllowed().isEmpty() || permissionObject.getNetConnectAllowed().contains(resourceItem)) {
+                if (permissionArgs.getFineGranularity()) {
+                    if (permissionObject.getNetConnectDenied().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return false;
+                    } else if (permissionObject.getNetConnectAllowed().isEmpty() || permissionObject.getNetConnectAllowed().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return true;
+                    } 
+                } else {
                     return true;
-                } 
+                }
+
             } else if (resourceOp == ResourceOp.ACCEPT) {
-                System.out.println("Checking accept: " + permissionObject.isNetAccept());
                 if (!permissionObject.isNetAccept()) {
                     return false;
                 }
 
-                if (permissionObject.getNetAcceptDenied().contains(resourceItem)) {
-                    return false;
-                } else if (permissionObject.getNetAcceptAllowed().isEmpty() || permissionObject.getNetAcceptAllowed().contains(resourceItem)) {
+                if (permissionArgs.getFineGranularity()) {
+                    if (permissionObject.getNetAcceptDenied().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return false;
+                    } else if (permissionObject.getNetAcceptAllowed().isEmpty() || permissionObject.getNetAcceptAllowed().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return true;
+                    } 
+                } else {
                     return true;
-                } 
+                }
             }
 
         } else if (resourceType == ResourceType.RUNTIME) {
@@ -372,11 +505,15 @@ public class PermissionsManager {
                     return false;
                 }
 
-                if (permissionObject.getRuntimeExecDenied().contains(resourceItem)) {
-                    return false;
-                } else if (permissionObject.getRuntimeExecAllowed().isEmpty() || permissionObject.getRuntimeExecAllowed().contains(resourceItem)) {
+                if (permissionArgs.getFineGranularity()) {
+                    if (permissionObject.getRuntimeExecDenied().stream().anyMatch(item -> resourceItem.contains(item))) {
+                        return false;
+                    } else if (permissionObject.getRuntimeExecAllowed().isEmpty() || permissionObject.getRuntimeExecAllowed().stream().anyMatch(item -> resourceItem.startsWith(item))) {
+                        return true;
+                    } 
+                } else {
                     return true;
-                } 
+                }
             }
 
         }

@@ -16,14 +16,14 @@ public class PermissionObject {
     private Set<String> fsReadAllowed;
     @JsonProperty("fs.read.denied")
     private Set<String> fsReadDenied;
-    @JsonProperty("fs.read.direct")
-    private Set<String> fsReadDirect;
+    @JsonProperty("fs.read.transitive")
+    private Set<String> fsReadTransitive;
     @JsonProperty("fs.write.allowed")
     private Set<String> fsWriteAllowed;
     @JsonProperty("fs.write.denied")
     private Set<String> fsWriteDenied;
-    @JsonProperty("fs.write.direct")
-    private Set<String> fsWriteDirect;
+    @JsonProperty("fs.write.transitive")
+    private Set<String> fsWriteTransitive;
 
     @JsonProperty("net")
     private boolean net;
@@ -37,8 +37,8 @@ public class PermissionObject {
     @JsonProperty("net.connect.denied")
     private Set<String> netConnectDenied;
 
-    @JsonProperty("net.connect.direct")
-    private Set<String> netConnectDirect;
+    @JsonProperty("net.connect.transitive")
+    private Set<String> netConnectTransitive;
 
     @JsonProperty("net.accept")
     private boolean netAccept;
@@ -49,8 +49,8 @@ public class PermissionObject {
     @JsonProperty("net.accept.denied")
     private Set<String> netAcceptDenied;
 
-    @JsonProperty("net.accept.direct")
-    private Set<String> netAcceptDirect;
+    @JsonProperty("net.accept.transitive")
+    private Set<String> netAcceptTransitive;
 
     @JsonProperty("runtime")
     private boolean runtime;
@@ -64,34 +64,39 @@ public class PermissionObject {
     @JsonProperty("runtime.exec.denied")
     private Set<String> runtimeExecDenied;
 
-    @JsonProperty("runtime.exec.direct")
-    private Set<String> runtimeExecDirect;
+    @JsonProperty("runtime.exec.transitive")
+    private Set<String> runtimeExecTransitive;
 
     public PermissionObject()
     {
-        this.fs = false;
-        this.fsRead = false;
-        this.fsWrite = false;
+        this(false);
+
+    }
+
+    public PermissionObject(boolean defaultValue) {
+        this.fs = defaultValue;
+        this.fsRead = defaultValue;
+        this.fsWrite = defaultValue;
         this.fsReadAllowed = new HashSet<>();
         this.fsReadDenied = new HashSet<>();
-        this.fsReadDirect = new HashSet<>();
+        this.fsReadTransitive = new HashSet<>();
         this.fsWriteAllowed = new HashSet<>();
         this.fsWriteDenied = new HashSet<>();
-        this.fsWriteDirect = new HashSet<>();
-        this.net = false;
-        this.netConnect = false;
+        this.fsWriteTransitive = new HashSet<>();
+        this.net = defaultValue;
+        this.netConnect = defaultValue;
         this.netConnectAllowed = new HashSet<>();
         this.netConnectDenied = new HashSet<>();
-        this.netConnectDirect = new HashSet<>();
-        this.netAccept = false;
+        this.netConnectTransitive = new HashSet<>();
+        this.netAccept = defaultValue;
         this.netAcceptAllowed = new HashSet<>();
         this.netAcceptDenied = new HashSet<>();
-        this.netAcceptDirect = new HashSet<>();
-        this.runtime = false;
-        this.runtimeExec = false;
+        this.netAcceptTransitive = new HashSet<>();
+        this.runtime = defaultValue;
+        this.runtimeExec = defaultValue;
         this.runtimeExecAllowed = new HashSet<>();
         this.runtimeExecDenied = new HashSet<>();
-        this.runtimeExecDirect = new HashSet<>();
+        this.runtimeExecTransitive = new HashSet<>();
 
 
     }
@@ -134,6 +139,10 @@ public class PermissionObject {
         this.fsReadAllowed.add(fsReadAllowed);
     }
 
+    public void addFsReadAllowed(Set<String> fsReadAllowed) {
+        this.fsReadAllowed.addAll(fsReadAllowed);
+    }
+
     public Set<String> getFsReadDenied() {
         return fsReadDenied;
     }
@@ -142,12 +151,16 @@ public class PermissionObject {
         this.fsReadDenied.add(fsReadDenied);
     }
 
-    public Set<String> getFsReadDirect() {
-        return fsReadDirect;
+    public void addFsReadDenied(Set<String> fsReadDenied) {
+        this.fsReadDenied.addAll(fsReadDenied);
     }
 
-    public void addFsReadDirect(String fsReadDirect) {
-        this.fsReadDirect.add(fsReadDirect);
+    public Set<String> getFsReadTransitive() {
+        return fsReadTransitive;
+    }
+
+    public void addFsReadTransitive(String fsReadDirect) {
+        this.fsReadTransitive.add(fsReadDirect);
     }
 
     public Set<String> getFsWriteAllowed() {
@@ -158,6 +171,10 @@ public class PermissionObject {
         this.fsWriteAllowed.add(fsWriteAllowed);
     }
 
+    public void addFsWriteAllowed(Set<String> fsWriteAllowed) {
+        this.fsWriteAllowed.addAll(fsWriteAllowed);
+    }
+
     public Set<String> getFsWriteDenied() {
         return fsWriteDenied;
     }
@@ -166,12 +183,16 @@ public class PermissionObject {
         this.fsWriteDenied.add(fsWriteDenied);
     }
 
-    public Set<String> getFsWriteDirect() {
-        return fsWriteDirect;
+    public void addFsWriteDenied(Set<String> fsWriteDenied) {
+        this.fsWriteDenied.addAll(fsWriteDenied);
     }
 
-    public void addFsWriteDirect(String fsWriteDirect) {
-        this.fsWriteDirect.add(fsWriteDirect);
+    public Set<String> getFsWriteTransitive() {
+        return fsWriteTransitive;
+    }
+
+    public void addFsWriteTransitive(String fsWriteDirect) {
+        this.fsWriteTransitive.add(fsWriteDirect);
     }
 
     public boolean isNet() {
@@ -198,6 +219,10 @@ public class PermissionObject {
         this.netConnectAllowed.add(netConnectAllowed);
     }
 
+    public void addNetConnectAllowed(Set<String> netConnectAllowed) {
+        this.netConnectAllowed.addAll(netConnectAllowed);
+    }
+
     public Set<String> getNetConnectDenied() {
         return netConnectDenied;
     }
@@ -206,12 +231,16 @@ public class PermissionObject {
         this.netConnectDenied.add(netConnectDenied);
     }
 
-    public Set<String> getNetConnectDirect() {
-        return netConnectDirect;
+    public void addNetConnectDenied(Set<String> netConnectDenied) {
+        this.netConnectDenied.addAll(netConnectDenied);
     }
 
-    public void addNetConnectDirect(String netConnectDirect) {
-        this.netConnectDirect.add(netConnectDirect);
+    public Set<String> getNetConnectTransitive() {
+        return netConnectTransitive;
+    }
+
+    public void addNetConnectTransitive(String netConnectDirect) {
+        this.netConnectTransitive.add(netConnectDirect);
     }
 
     public boolean isNetAccept() {
@@ -230,6 +259,10 @@ public class PermissionObject {
         this.netAcceptAllowed.add(netAcceptAllowed);
     }
 
+    public void addNetAcceptAllowed(Set<String> netAcceptAllowed) {
+        this.netAcceptAllowed.addAll(netAcceptAllowed);
+    }
+
     public Set<String> getNetAcceptDenied() {
         return netAcceptDenied;
     }
@@ -238,12 +271,16 @@ public class PermissionObject {
         this.netAcceptDenied.add(netAcceptDenied);
     }
 
-    public Set<String> getNetAcceptDirect() {
-        return netAcceptDirect;
+    public void addNetAcceptDenied(Set<String> netAcceptDenied) {
+        this.netAcceptDenied.addAll(netAcceptDenied);
     }
 
-    public void addNetAcceptDirect(String netAcceptDirect) {
-        this.netAcceptDirect.add(netAcceptDirect);
+    public Set<String> getNetAcceptTransitive() {
+        return netAcceptTransitive;
+    }
+
+    public void addNetAcceptTransitive(String netAcceptDirect) {
+        this.netAcceptTransitive.add(netAcceptDirect);
     }
 
     public boolean isRuntime() {
@@ -270,6 +307,10 @@ public class PermissionObject {
         this.runtimeExecAllowed.add(runtimeExecAllowed);
     }
 
+    public void addRuntimeExecAllowed(Set<String> runtimeExecAllowed) {
+        this.runtimeExecAllowed.addAll(runtimeExecAllowed);
+    }
+
     public Set<String> getRuntimeExecDenied() {
         return runtimeExecDenied;
     }
@@ -278,12 +319,12 @@ public class PermissionObject {
         this.runtimeExecDenied.add(runtimeExecDenied);
     }
 
-    public Set<String> getRuntimeExecDirect() {
-        return runtimeExecDirect;
+    public Set<String> getRuntimeExecTransitive() {
+        return runtimeExecTransitive;
     }
 
-    public void addRuntimeExecDirect(String runtimeExecDirect) {
-        this.runtimeExecDirect.add(runtimeExecDirect);
+    public void addRuntimeExecTransitive(String runtimeExecDirect) {
+        this.runtimeExecTransitive.add(runtimeExecDirect);
     }
 
     public boolean isThread() {

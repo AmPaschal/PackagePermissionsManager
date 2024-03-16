@@ -14,6 +14,8 @@ public class Utils {
         boolean monitor = false;
         String outputFile = null;
         String permissionFilePath = null;
+        boolean fineGranularity = false;
+        boolean enableCache = false;
         // Split the agentArgs string into individual arguments
 
         if (agentArgString != null) {
@@ -41,7 +43,12 @@ public class Utils {
                         outputFile = argValue;
                     } else if ("permFilePath".equals(argName)) {
                         permissionFilePath = argValue;
+                    } else if ("granularity".equals(argName)) {
+                        fineGranularity = argValue.equals("fine");
+                    } else if ("enableCache".equals(argName)) {
+                        enableCache = Boolean.parseBoolean(argValue);
                     }
+
                 }
             }
         }
@@ -62,7 +69,7 @@ public class Utils {
             
         }
 
-        PermissionArgs agentArgs = new PermissionArgs(permissionFilePath, outputFile, enforce, monitor);
+        PermissionArgs agentArgs = new PermissionArgs(permissionFilePath, outputFile, enforce, monitor, fineGranularity, enableCache);
 
         // TODO: Validate the presence of necessary arguments
         return agentArgs;

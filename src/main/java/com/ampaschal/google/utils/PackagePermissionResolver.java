@@ -7,11 +7,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 // Credits to ChatGPT for this implementation
 
 public class PackagePermissionResolver {
+
+    Map<String, PermissionObject> permissionCache = new LinkedHashMap<>();
 
     private TrieNode root = new TrieNode();
 
@@ -96,5 +99,20 @@ public class PackagePermissionResolver {
         public void setPermission(PackagePermission permission) {
             this.permission = permission;
         }
+    }
+
+    public PermissionObject getPermissionFromCache(String cacheKey) {
+        return permissionCache.get(cacheKey);
+    }
+
+    public void savePermissionToCache(String cacheKey, PermissionObject permissionObject) {
+        // Delete oldest item in permission cache if the cache has more than 10 elements
+        if (permissionCache.size() > 10) {
+            String oldestKey = permissionCache.keySet().iterator().next();
+            permissionCache.remove(oldestKey);
+        }
+
+        permissionCache.put(cacheKey, permissionObject);
+
     }
 }
