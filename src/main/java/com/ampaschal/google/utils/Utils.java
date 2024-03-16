@@ -12,8 +12,10 @@ public class Utils {
     public static PermissionArgs processAgentArgs(String agentArgString) {
         boolean enforce = false;
         boolean monitor = false;
-        String outputPath = null;
+        String outputFile = null;
         String permissionFilePath = null;
+        boolean fineGranularity = false;
+        boolean enableCache = false;
         // Split the agentArgs string into individual arguments
 
         if (agentArgString != null) {
@@ -37,11 +39,16 @@ public class Utils {
                         if (RuntimeMode.MONITOR.equals(runtimeMode) || RuntimeMode.BOTH.equals(runtimeMode)) {
                             monitor = true;
                         }
-                    } else if ("outputPath".equals(argName)) {
-                        outputPath = argValue;
+                    } else if ("outputFile".equals(argName)) {
+                        outputFile = argValue;
                     } else if ("permFilePath".equals(argName)) {
                         permissionFilePath = argValue;
+                    } else if ("granularity".equals(argName)) {
+                        fineGranularity = argValue.equals("fine");
+                    } else if ("enableCache".equals(argName)) {
+                        enableCache = Boolean.parseBoolean(argValue);
                     }
+
                 }
             }
         }
@@ -56,30 +63,13 @@ public class Utils {
             System.exit(-1);
         }
 
-        if (monitor) {
-            if (outputPath == null) {
-                outputPath = System.getProperty("user.dir") + '/';
-            } else {
-                Path outputDir = Paths.get(outputPath);
-
-                // Check if the outputPath is a valid directory
-                if (Files.exists(outputDir) && Files.isDirectory(outputDir)) {
-                    if (!outputPath.endsWith("/")) {
-                        outputPath += "/";
-                    }
-                } else {
-                    System.out.println("Output path:" + outputDir.toAbsolutePath());
-                    // Handle the case when outputPath is not a valid directory
-                    throw new IllegalArgumentException("Output path is not a valid directory");
-                }
-            }
-
-            if (!outputPath.endsWith("/")) {
-                outputPath += "/";
-            }
+        if (monitor && outputFile == null) {
+            
+            outputFile = System.getProperty("user.dir") + "/next-jsm-policy.json";
+            
         }
 
-        PermissionArgs agentArgs = new PermissionArgs(permissionFilePath, outputPath, enforce, monitor);
+        PermissionArgs agentArgs = new PermissionArgs(permissionFilePath, outputFile, enforce, monitor, fineGranularity, enableCache);
 
         // TODO: Validate the presence of necessary arguments
         return agentArgs;
