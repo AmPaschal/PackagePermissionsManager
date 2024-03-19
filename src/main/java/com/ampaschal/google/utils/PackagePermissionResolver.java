@@ -1,14 +1,14 @@
 package com.ampaschal.google.utils;
 
-import com.ampaschal.google.PermissionObject;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.ampaschal.google.PermissionObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 // Credits to ChatGPT for this implementation
 
@@ -20,7 +20,7 @@ public class PackagePermissionResolver {
 
     public void generatePermissionsContext(String permissionsFilePath) throws IOException {
 
-        File permissionsFile = new File(permissionsFilePath);
+        FileInputStream permissionsFile = new FileInputStream(permissionsFilePath);
 
         TypeReference<Map<String, PermissionObject>> typeRef = new TypeReference<Map<String, PermissionObject>>() {};
 

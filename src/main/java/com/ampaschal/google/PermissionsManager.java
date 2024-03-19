@@ -1,13 +1,12 @@
 package com.ampaschal.google;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -162,7 +161,7 @@ public class PermissionsManager {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(new File(outputFile), monitorMap);
+            mapper.writeValue(new FileOutputStream(outputFile), monitorMap);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,7 +233,7 @@ public class PermissionsManager {
         LinkedHashSet<String> subjectPaths = new LinkedHashSet<>();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
-        String currentClass = stackTrace[1].getClassName();
+        String permissionPackage = "com.ampaschal.google";
 
         // Return the first non-java class in the stackstrace
         // I want to skip the containing class of this method as it clearly can't be the
@@ -242,7 +241,7 @@ public class PermissionsManager {
         for (StackTraceElement element : stackTrace) {
             String elementClassName = element.getClassName();
             if (elementClassName.startsWith("java") || elementClassName.startsWith("jdk")
-                    || elementClassName.startsWith("sun") || elementClassName.equals(currentClass)) {
+                    || elementClassName.startsWith("sun") || elementClassName.startsWith(permissionPackage)) {
                 continue;
             }
             subjectPaths.add(elementClassName);
@@ -532,7 +531,7 @@ public class PermissionsManager {
         int numSegments = Math.min(3, segments.length - 1);
 
         StringBuilder packageNameBuilder = new StringBuilder(segments[0]);
-        for (int i = 1; i < numSegments - 1; i++) {
+        for (int i = 1; i < numSegments; i++) {
             packageNameBuilder.append(".").append(segments[i]);
         }
 
