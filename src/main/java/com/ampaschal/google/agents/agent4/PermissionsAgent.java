@@ -143,9 +143,9 @@ public class PermissionsAgent {
                     (methodVisitor, methodName, methodDescriptor) -> {
                         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
                         methodVisitor.visitFieldInsn(Opcodes.GETFIELD, "java/lang/ProcessBuilder", "command", "Ljava/util/List;");
-                        methodVisitor.visitInsn(Opcodes.ICONST_0);
-                        methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true);
-                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/String");
+                        // methodVisitor.visitInsn(Opcodes.ICONST_0);
+                        // methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true);
+                        // methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/String");
                     },
                     0
             );

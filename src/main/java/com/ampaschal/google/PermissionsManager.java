@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -233,7 +234,7 @@ public class PermissionsManager {
         LinkedHashSet<String> subjectPaths = new LinkedHashSet<>();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
-        String permissionPackage = "com.ampaschal.google";
+        String permissionPackage = stackTrace[1].getClassName();
 
         // Return the first non-java class in the stackstrace
         // I want to skip the containing class of this method as it clearly can't be the
@@ -254,6 +255,11 @@ public class PermissionsManager {
 
         LinkedHashSet<String> subjectPaths = getSubjectPaths();
 
+        if (resourceTypeInt == ResourceType.RUNTIME.getId()) {
+            List<String> commandList = (List<String>) resourceItem;
+            resourceItem = String.join(" ", commandList);
+        }
+
         checkPermission(resourceTypeInt, resourceOpInt, (String) resourceItem, subjectPaths);
 
     }
@@ -267,6 +273,10 @@ public class PermissionsManager {
 
         if (resourceType == null || resourceOp == null) {
             throw new SecurityException("Invalid Permission Request");
+        }
+
+        if (((String)resourceItem).contains("policy-failures.log")) {
+            return;
         }
 
         int subjectPathSize = subjectPaths.size();

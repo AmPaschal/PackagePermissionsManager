@@ -22,7 +22,7 @@ def minimize_paths(paths):
             if not children:
                 # print(f"current path: {current_path}")
                 minimized_paths.append(current_path + '/' + component)
-            elif len(children) > 4:
+            elif len(children) > 3:
                 minimized_paths.append(current_path + '/' + component)
                 trie[component].clear()
             else:
